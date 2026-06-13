@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Sprite Slicer — Coordinate Picker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#0f1117;
+  --panel:#161922;
+  --panel-2:#1d212c;
+  --border:#2a2f3b;
+  --border-light:#3a4150;
+  --text:#eef0f4;
+  --text-dim:#8b93a3;
+  --text-faint:#565e70;
+  --accent:#ff8a3d;
+  --accent-soft:rgba(255,138,61,0.14);
+  --accent-2:#4fd1c5;
+  --accent-2-soft:rgba(79,209,197,0.14);
+  --danger:#ff6464;
+  --danger-soft:rgba(255,100,100,0.12);
+  --radius:8px;
+  --radius-sm:5px;
+  --sans:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:var(--sans);
+  background:var(--bg);
+  color:var(--text);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button, input{font-family:inherit;}
+*:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:3px;}
+
+.app{display:flex;flex-direction:column;height:100vh;}
+
+/* ---------- Topbar ---------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  height:58px;flex:0 0 58px;
+  padding:0 18px;
+  border-bottom:1px solid var(--border);
+  background:var(--panel);
+  gap:16px;
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;}
+.brand .logo{color:var(--accent);flex:0 0 auto;}
+.brand-text{display:flex;flex-direction:column;line-height:1.2;min-width:0;}
+.brand-text strong{font-size:15px;font-weight:700;letter-spacing:.01em;}
+.brand-text span{font-size:11px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+.file-meta{font-family:var(--mono);font-size:12px;color:var(--text-dim);white-space:nowrap;}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;font-size:13px;font-weight:500;
+  background:var(--panel-2);color:var(--text);
+  border:1px solid var(--border-light);border-radius:var(--radius-sm);
+  cursor:pointer;transition:border-color .15s,color .15s,background .15s,opacity .15s;
+  white-space:nowrap;
+}
+.btn:hover{border-color:var(--accent);color:#fff;}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#1c1102;font-weight:600;}
+.btn-primary:hover{filter:brightness(1.08);border-color:var(--accent);color:#1c1102;}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border-light);}
+.btn-block{width:100%;justify-content:center;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn:disabled:hover{border-color:var(--border-light);color:var(--text);}
+.btn-success{background:var(--accent-2-soft)!important;border-color:var(--accent-2)!important;color:var(--accent-2)!important;}
+
+.btn-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;padding:0;
+  background:transparent;color:var(--text-dim);
+  border:1px solid var(--border-light);border-radius:var(--radius-sm);
+  cursor:pointer;transition:border-color .15s,color .15s,background .15s;
+}
+.btn-icon:hover{color:var(--text);border-color:var(--accent);}
+.btn-icon:disabled{opacity:.35;cursor:not-allowed;}
+.btn-icon:disabled:hover{color:var(--text-dim);border-color:var(--border-light);}
+.btn-icon-sm{width:26px;height:26px;}
+.btn-icon-danger:hover{color:var(--danger);border-color:var(--danger);}
+
+/* ---------- Workspace ---------- */
+.workspace{display:flex;flex:1;min-height:0;}
+.stage-wrap{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;}
+
+.canvas-area{
+  position:relative;flex:1;overflow:auto;padding:48px;
+  background-color:#1b1e28;
+  background-image:
+    linear-gradient(45deg,#242837 25%,transparent 25%),
+    linear-gradient(-45deg,#242837 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#242837 75%),
+    linear-gradient(-45deg,transparent 75%,#242837 75%);
+  background-size:24px 24px;
+  background-position:0 0,0 12px,12px -12px,-12px 0;
+  transition:outline-color .15s;
+  outline:2px dashed transparent;
+  outline-offset:-2px;
+}
+.canvas-area.drag-over{outline-color:var(--accent);background-color:#20242f;}
+
+.empty-state{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  padding:48px 56px;border:1.5px dashed var(--border-light);border-radius:14px;
+  text-align:center;color:var(--text-dim);
+  pointer-events:none;
+}
+.empty-state .empty-icon{color:var(--text-faint);}
+.empty-state h3{margin:0;font-size:16px;font-weight:600;color:var(--text);}
+.empty-state p{margin:0;font-size:13px;color:var(--text-faint);max-width:280px;line-height:1.5;}
+.empty-state .btn{pointer-events:auto;margin-top:4px;}
+
+.canvas-stage{position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 12px 40px rgba(0,0,0,.5);}
+.canvas-stage canvas{display:block;image-rendering:pixelated;image-rendering:-moz-crisp-edges;}
+
+.grid-overlay{
+  position:absolute;top:0;left:0;pointer-events:none;z-index:1;
+  background-image:
+    repeating-linear-gradient(to right,rgba(255,255,255,.18) 0,rgba(255,255,255,.18) 1px,transparent 1px,transparent 100%),
+    repeating-linear-gradient(to bottom,rgba(255,255,255,.18) 0,rgba(255,255,255,.18) 1px,transparent 1px,transparent 100%);
+}
+
+.selection{
+  position:absolute;z-index:2;border:1px solid var(--accent);
+  background:rgba(255,138,61,.10);cursor:move;
+  box-shadow:0 0 0 1px var(--accent),0 0 18px 2px rgba(255,138,61,.30);
+  animation:selPulse 2.2s ease-in-out infinite;
+}
+@keyframes selPulse{
+  0%,100%{box-shadow:0 0 0 1px var(--accent),0 0 14px 1px rgba(255,138,61,.22);}
+  50%{box-shadow:0 0 0 1px var(--accent),0 0 22px 4px rgba(255,138,61,.42);}
+}
+@media (prefers-reduced-motion:reduce){.selection{animation:none;}}
+
+.sel-tag{
+  position:absolute;top:0;left:0;transform:translateY(-100%);
+  background:var(--accent);color:#1c1102;font-family:var(--mono);
+  font-size:11px;font-weight:600;padding:2px 6px;border-radius:3px 3px 0 0;
+  white-space:nowrap;pointer-events:none;
+}
+.handle{
+  position:absolute;width:10px;height:10px;background:var(--accent);
+  border:2px solid var(--bg);border-radius:2px;z-index:3;
+}
+.handle-nw{top:-6px;left:-6px;cursor:nwse-resize;}
+.handle-n{top:-6px;left:50%;margin-left:-5px;cursor:ns-resize;}
+.handle-ne{top:-6px;right:-6px;cursor:nesw-resize;}
+.handle-e{top:50%;right:-6px;margin-top:-5px;cursor:ew-resize;}
+.handle-se{bottom:-6px;right:-6px;cursor:nwse-resize;}
+.handle-s{bottom:-6px;left:50%;margin-left:-5px;cursor:ns-resize;}
+.handle-sw{bottom:-6px;left:-6px;cursor:nesw-resize;}
+.handle-w{top:50%;left:-6px;margin-top:-5px;cursor:ew-resize;}
+
+.cursor-badge{
+  position:absolute;z-index:5;pointer-events:none;
+  background:rgba(15,17,23,.9);border:1px solid var(--border-light);
+  color:var(--text-dim);font-family:var(--mono);font-size:11px;
+  padding:3px 7px;border-radius:4px;display:none;
+}
+
+.zoom-controls{
+  position:absolute;right:16px;bottom:48px;z-index:6;
+  display:flex;align-items:center;gap:2px;
+  background:var(--panel);border:1px solid var(--border-light);
+  border-radius:var(--radius);padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.4);
+}
+.zoom-controls .btn-icon{border-color:transparent;}
+.zoom-controls .btn-icon:hover{border-color:var(--border-light);}
+.zoom-label{
+  font-family:var(--mono);font-size:12px;color:var(--text-dim);
+  width:52px;text-align:center;user-select:none;
+}
+
+.status-bar{
+  flex:0 0 32px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-top:1px solid var(--border);background:var(--panel);
+  font-family:var(--mono);font-size:11.5px;color:var(--text-faint);
+  white-space:nowrap;overflow:hidden;
+}
+.status-bar .status-left{overflow:hidden;text-overflow:ellipsis;}
+.status-bar .status-right{flex:0 0 auto;margin-left:16px;color:var(--text-faint);}
+
+/* ---------- Sidebar ---------- */
+.sidebar{
+  width:328px;flex:0 0 328px;border-left:1px solid var(--border);
+  background:var(--panel);overflow-y:auto;display:flex;flex-direction:column;
+}
+.panel{padding:18px;border-bottom:1px solid var(--border);}
+.panel h2{
+  margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--text-dim);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel h2 .count{color:var(--text-faint);font-weight:500;letter-spacing:0;text-transform:none;}
+.panel h2 .panel-actions{display:flex;gap:6px;}
+
+.field{display:block;margin-bottom:12px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;}
+.field input[type="text"],
+.field input[type="number"]{
+  width:100%;background:var(--bg);border:1px solid var(--border-light);
+  color:var(--text);padding:8px 9px;border-radius:var(--radius-sm);font-size:13px;
+}
+.field input[type="number"]{font-family:var(--mono);}
+.field input:disabled{opacity:.4;cursor:not-allowed;}
+.field input:focus{border-color:var(--accent);}
+
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+.checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:var(--text-dim);user-select:none;cursor:pointer;}
+.checkbox-row:last-of-type{margin-bottom:14px;}
+.checkbox-row input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
+
+.action-row{display:flex;gap:8px;}
+.action-row .btn{flex:1;}
+
+.slices-panel{flex:1;display:flex;flex-direction:column;min-height:120px;}
+.slices-list{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;}
+.slices-empty{font-size:12.5px;color:var(--text-faint);padding:8px 0;line-height:1.5;}
+.slice-item{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 0;border-bottom:1px solid var(--border);
+}
+.slice-item:last-child{border-bottom:none;}
+.slice-info{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden;}
+.slice-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slice-dims{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
+.slice-actions{display:flex;gap:6px;flex:0 0 auto;}
+
+/* scrollbars */
+.canvas-area::-webkit-scrollbar,.sidebar::-webkit-scrollbar,.slices-list::-webkit-scrollbar{width:10px;height:10px;}
+.canvas-area::-webkit-scrollbar-thumb,.sidebar::-webkit-scrollbar-thumb,.slices-list::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:5px;}
+.canvas-area::-webkit-scrollbar-track,.sidebar::-webkit-scrollbar-track,.slices-list::-webkit-scrollbar-track{background:transparent;}
+
+/* ---------- Responsive ---------- */
+@media (max-width:860px){
+  .workspace{flex-direction:column;}
+  .sidebar{width:100%;flex:0 0 auto;max-height:46vh;border-left:none;border-top:1px solid var(--border);}
+  .stage-wrap{min-height:280px;}
+  .brand-text span{display:none;}
+  .file-meta{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="3" stroke-dasharray="3 3.2"/>
+        <path d="M12 8v8M8 12h8"/>
+      </svg>
+      <div class="brand-text">
+        <strong>Sprite Slicer</strong>
+        <span>sprite sheet coordinate picker</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="file-meta" id="fileMeta"></span>
+      <label class="btn btn-primary" for="fileInput" id="uploadLabel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        Upload image
+      </label>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <div class="stage-wrap">
+      <div class="canvas-area" id="canvasArea">
+        <div class="empty-state" id="emptyState">
+          <svg class="empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="9" cy="9" r="2"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <h3>Drop a sprite sheet here</h3>
+          <p>PNG, JPG, GIF or WebP. Or click below to browse — you can also paste an image with Ctrl/Cmd+V.</p>
+          <label class="btn btn-primary" for="fileInput">Choose image</label>
+        </div>
+
+        <div class="canvas-stage" id="canvasStage" style="display:none;">
+          <canvas id="imageCanvas"></canvas>
+          <div class="grid-overlay" id="gridOverlay" style="display:none;"></div>
+          <div class="selection" id="selection" style="display:none;">
+            <div class="sel-tag" id="selTag"></div>
+            <div class="handle handle-nw" data-handle="nw"></div>
+            <div class="handle handle-n" data-handle="n"></div>
+            <div class="handle handle-ne" data-handle="ne"></div>
+            <div class="handle handle-e" data-handle="e"></div>
+            <div class="handle handle-se" data-handle="se"></div>
+            <div class="handle handle-s" data-handle="s"></div>
+            <div class="handle handle-sw" data-handle="sw"></div>
+            <div class="handle handle-w" data-handle="w"></div>
+          </div>
+        </div>
+
+        <div class="cursor-badge" id="cursorBadge"></div>
+
+        <div class="zoom-controls" id="zoomControls" style="display:none;">
+          <button class="btn-icon" id="zoomOut" title="Zoom out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>
+          </button>
+          <span class="zoom-label" id="zoomLabel">100%</span>
+          <button class="btn-icon" id="zoomIn" title="Zoom in">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button class="btn-icon" id="zoomFit" title="Fit to view" style="width:auto;padding:0 8px;font-size:11px;">Fit</button>
+          <button class="btn-icon" id="zoom100" title="100%" style="width:auto;padding:0 8px;font-size:11px;">1:1</button>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status-left" id="statusLeft">Upload a sprite sheet to get started</span>
+        <span class="status-right" id="statusRight"></span>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <h2>Selection</h2>
+        <div class="field">
+          <label for="sliceName">Name</label>
+          <input type="text" id="sliceName" placeholder="player_idle_01" autocomplete="off">
+        </div>
+        <div class="grid4">
+          <div class="field">
+            <label for="inputX">X</label>
+            <input type="number" id="inputX" value="0" disabled>
+          </div>
+          <div class="field">
+            <label for="inputY">Y</label>
+            <input type="number" id="inputY" value="0" disabled>
+          </div>
+          <div class="field">
+            <label for="inputW">Width</label>
+            <input type="number" id="inputW" value="0" min="1" disabled>
+          </div>
+          <div class="field">
+            <label for="inputH">Height</label>
+            <input type="number" id="inputH" value="0" min="1" disabled>
+          </div>
+        </div>
+        <div class="action-row" style="margin-bottom:8px;">
+          <button class="btn" id="copyCurrent" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy JSON
+          </button>
+          <button class="btn" id="downloadCurrent" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            Download
+          </button>
+        </div>
+        <button class="btn btn-block" id="addSlice" disabled>+ Add to list</button>
+      </div>
+
+      <div class="panel">
+        <h2>Grid</h2>
+        <label class="checkbox-row">
+          <input type="checkbox" id="showGrid">
+          Show grid overlay
+        </label>
+        <label class="checkbox-row">
+          <input type="checkbox" id="snapGrid">
+          Snap to grid (click a cell to select it)
+        </label>
+        <div class="grid2">
+          <div class="field">
+            <label for="cellW">Cell width</label>
+            <input type="number" id="cellW" value="32" min="1">
+          </div>
+          <div class="field">
+            <label for="cellH">Cell height</label>
+            <input type="number" id="cellH" value="32" min="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel slices-panel">
+        <h2>
+          Saved slices <span class="count" id="sliceCount">(0)</span>
+          <span class="panel-actions">
+            <button class="btn-icon btn-icon-sm" id="copyAll" title="Copy all as JSON" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+            <button class="btn-icon btn-icon-sm" id="downloadAll" title="Download all as JSON" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            </button>
+          </span>
+        </h2>
+        <ul class="slices-list" id="slicesList"></ul>
+        <p class="slices-empty" id="slicesEmpty">Add slices to build a sprite atlas JSON you can copy or download in one go.</p>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+(() => {
+  // ---------- DOM refs ----------
+  const fileInput   = document.getElementById('fileInput');
+  const uploadLabel = document.getElementById('uploadLabel');
+  const fileMeta    = document.getElementById('fileMeta');
+  const canvasArea  = document.getElementById('canvasArea');
+  const emptyState  = document.getElementById('emptyState');
+  const canvasStage = document.getElementById('canvasStage');
+  const canvas      = document.getElementById('imageCanvas');
+  const ctx         = canvas.getContext('2d');
+  const gridOverlay = document.getElementById('gridOverlay');
+  const selectionEl = document.getElementById('selection');
+  const selTag      = document.getElementById('selTag');
+  const cursorBadge = document.getElementById('cursorBadge');
+  const zoomControls= document.getElementById('zoomControls');
+  const zoomLabel   = document.getElementById('zoomLabel');
+  const statusLeft  = document.getElementById('statusLeft');
+  const statusRight = document.getElementById('statusRight');
+
+  const sliceNameInput = document.getElementById('sliceName');
+  const inputX = document.getElementById('inputX');
+  const inputY = document.getElementById('inputY');
+  const inputW = document.getElementById('inputW');
+  const inputH = document.getElementById('inputH');
+  const copyCurrentBtn = document.getElementById('copyCurrent');
+  const downloadCurrentBtn = document.getElementById('downloadCurrent');
+  const addSliceBtn = document.getElementById('addSlice');
+
+  const showGridChk = document.getElementById('showGrid');
+  const snapGridChk = document.getElementById('snapGrid');
+  const cellWInput  = document.getElementById('cellW');
+  const cellHInput  = document.getElementById('cellH');
+
+  const slicesList   = document.getElementById('slicesList');
+  const slicesEmpty  = document.getElementById('slicesEmpty');
+  const sliceCount   = document.getElementById('sliceCount');
+  const copyAllBtn   = document.getElementById('copyAll');
+  const downloadAllBtn = document.getElementById('downloadAll');
+
+  const trashIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6h12z"/></svg>`;
+  const loadIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h13M11 6l5 6-5 6"/></svg>`;
+  const checkIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
+
+  // ---------- State ----------
+  let img = null;
+  let naturalW = 0, naturalH = 0;
+  let zoom = 1;
+  let currentFileName = '';
+
+  let hasSelection = false;
+  let selection = {x:0, y:0, w:0, h:0};
+  let slices = [];
+
+  let dragMode = null;       // 'new' | 'move' | 'resize-<handle>'
+  let dragStartImg = {x:0, y:0};
+  let selStart = {x:0, y:0, w:0, h:0};
+  let dragMoved = false;
+
+  // ---------- Helpers ----------
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
+  function getMaxZoom(){
+    return Math.max(1, Math.min(32, 8000 / Math.max(naturalW, naturalH, 1)));
+  }
+
+  function getImageCoords(e){
+    const rect = canvasStage.getBoundingClientRect();
+    let x = (e.clientX - rect.left) / zoom;
+    let y = (e.clientY - rect.top) / zoom;
+    return {
+      x: clamp(x, 0, naturalW),
+      y: clamp(y, 0, naturalH)
+    };
+  }
+
+  function snapToGrid(sel){
+    const cw = parseInt(cellWInput.value) || 1;
+    const ch = parseInt(cellHInput.value) || 1;
+    if (!snapGridChk.checked || cw < 1 || ch < 1) return sel;
+    let x1 = Math.round(sel.x / cw) * cw;
+    let y1 = Math.round(sel.y / ch) * ch;
+    let x2 = Math.round((sel.x + sel.w) / cw) * cw;
+    let y2 = Math.round((sel.y + sel.h) / ch) * ch;
+    if (x2 <= x1) x2 = x1 + cw;
+    if (y2 <= y1) y2 = y1 + ch;
+    return {x:x1, y:y1, w:x2-x1, h:y2-y1};
+  }
+
+  function clampSelection(sel){
+    let x = clamp(Math.round(sel.x), 0, naturalW);
+    let y = clamp(Math.round(sel.y), 0, naturalH);
+    let w = clamp(Math.round(sel.w), 1, naturalW - x);
+    let h = clamp(Math.round(sel.h), 1, naturalH - y);
+    return {x, y, w, h};
+  }
+
+  function escapeHTML(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ---------- Image loading ----------
+  function loadImageFile(file){
+    if (!file || !file.type || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const image = new Image();
+      image.onload = () => {
+        img = image;
+        naturalW = image.naturalWidth;
+        naturalH = image.naturalHeight;
+        currentFileName = file.name || 'sprite-sheet.png';
+        fileMeta.textContent = `${currentFileName} · ${naturalW} × ${naturalH}px`;
+        uploadLabel.textContent = '';
+        uploadLabel.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg> Replace image`;
+
+        emptyState.style.display = 'none';
+        canvasStage.style.display = 'block';
+        zoomControls.style.display = 'flex';
+
+        hasSelection = false;
+        selection = {x:0, y:0, w:0, h:0};
+
+        [inputX, inputY, inputW, inputH].forEach(el => el.disabled = false);
+
+        zoomFit();
+        render();
+        updateSelectionUI();
+        updateStatus();
+      };
+      image.onerror = () => {
+        statusLeft.textContent = 'Could not load that file as an image.';
+      };
+      image.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ---------- Rendering ----------
+  function render(){
+    canvas.width = Math.max(1, Math.round(naturalW * zoom));
+    canvas.height = Math.max(1, Math.round(naturalH * zoom));
+    canvasStage.style.width = canvas.width + 'px';
+    canvasStage.style.height = canvas.height + 'px';
+    ctx.imageSmoothingEnabled = false;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    updateGridOverlay();
+    updateSelectionUI();
+    updateZoomLabel();
+    updateStatus();
+  }
+
+  function updateGridOverlay(){
+    if (!showGridChk.checked || !img){
+      gridOverlay.style.display = 'none';
+      return;
+    }
+    const cw = (parseInt(cellWInput.value) || 1) * zoom;
+    const ch = (parseInt(cellHInput.value) || 1) * zoom;
+    gridOverlay.style.display = 'block';
+    gridOverlay.style.width = canvas.width + 'px';
+    gridOverlay.style.height = canvas.height + 'px';
+    gridOverlay.style.backgroundSize = `${cw}px 100%, 100% ${ch}px`;
+  }
+
+  function updateSelectionUI(){
+    const valid = hasSelection && selection.w >= 1 && selection.h >= 1;
+    if (!valid){
+      selectionEl.style.display = 'none';
+    } else {
+      selectionEl.style.display = 'block';
+      selectionEl.style.left   = (selection.x * zoom) + 'px';
+      selectionEl.style.top    = (selection.y * zoom) + 'px';
+      selectionEl.style.width  = (selection.w * zoom) + 'px';
+      selectionEl.style.height = (selection.h * zoom) + 'px';
+      selTag.textContent = `${selection.w} × ${selection.h}`;
+    }
+    copyCurrentBtn.disabled = !valid;
+    downloadCurrentBtn.disabled = !valid;
+    addSliceBtn.disabled = !valid;
+    setInputs();
+  }
+
+  function setInputs(){
+    const map = {inputX:['x',inputX], inputY:['y',inputY], inputW:['w',inputW], inputH:['h',inputH]};
+    Object.values(map).forEach(([key, el]) => {
+      if (document.activeElement !== el){
+        el.value = hasSelection ? selection[key] : '';
+      }
+    });
+  }
+
+  function updateZoomLabel(){
+    zoomLabel.textContent = Math.round(zoom * 100) + '%';
+  }
+
+  function updateStatus(){
+    if (!img){
+      statusLeft.textContent = 'Upload a sprite sheet to get started';
+      statusRight.textContent = '';
+      return;
+    }
+    if (hasSelection && selection.w >= 1 && selection.h >= 1){
+      statusLeft.textContent = `Selection — x ${selection.x}, y ${selection.y}, w ${selection.w}, h ${selection.h}`;
+    } else {
+      statusLeft.textContent = 'Drag on the image to select a sprite';
+    }
+    statusRight.textContent = `${naturalW} × ${naturalH}px · ${Math.round(zoom*100)}% zoom · arrows to nudge`;
+  }
+
+  // ---------- Zoom ----------
+  function setZoomCentered(newZoom, clientX, clientY){
+    newZoom = clamp(newZoom, 0.05, getMaxZoom());
+    if (newZoom === zoom) return;
+    const rect = canvasArea.getBoundingClientRect();
+    const cx = clientX !== undefined ? clientX : rect.left + rect.width/2;
+    const cy = clientY !== undefined ? clientY : rect.top + rect.height/2;
+    const offsetX = cx - rect.left + canvasArea.scrollLeft;
+    const offsetY = cy - rect.top + canvasArea.scrollTop;
+    const ratio = newZoom / zoom;
+    zoom = newZoom;
+    render();
+    canvasArea.scrollLeft = offsetX * ratio - (cx - rect.left);
+    canvasArea.scrollTop  = offsetY * ratio - (cy - rect.top);
+  }
+
+  function zoomFit(){
+    const availW = Math.max(50, canvasArea.clientWidth - 96);
+    const availH = Math.max(50, canvasArea.clientHeight - 96);
+    const scale = Math.min(availW / naturalW, availH / naturalH);
+    zoom = clamp(scale, 0.05, getMaxZoom());
+  }
+
+  // ---------- Selection drag interactions ----------
+  function applyResize(handle, dx, dy){
+    let x = selStart.x, y = selStart.y;
+    let x2 = selStart.x + selStart.w;
+    let y2 = selStart.y + selStart.h;
+
+    if (handle.includes('e')) x2 = selStart.x + selStart.w + dx;
+    if (handle.includes('s')) y2 = selStart.y + selStart.h + dy;
+    if (handle.includes('w')) x  = selStart.x + dx;
+    if (handle.includes('n')) y  = selStart.y + dy;
+
+    let nx  = Math.min(x, x2), nx2 = Math.max(x, x2);
+    let ny  = Math.min(y, y2), ny2 = Math.max(y, y2);
+
+    nx  = clamp(nx, 0, naturalW);
+    nx2 = clamp(nx2, 0, naturalW);
+    ny  = clamp(ny, 0, naturalH);
+    ny2 = clamp(ny2, 0, naturalH);
+
+    selection = {
+      x: Math.round(nx),
+      y: Math.round(ny),
+      w: Math.max(1, Math.round(nx2 - nx)),
+      h: Math.max(1, Math.round(ny2 - ny))
+    };
+  }
+
+  canvasStage.addEventListener('mousedown', (e) => {
+    if (!img) return;
+    e.preventDefault();
+    const target = e.target;
+    dragMoved = false;
+    dragStartImg = getImageCoords(e);
+
+    if (target.classList.contains('handle')){
+      dragMode = 'resize-' + target.dataset.handle;
+      selStart = {...selection};
+    } else if (target.closest('.selection') && hasSelection){
+      dragMode = 'move';
+      selStart = {...selection};
+    } else {
+      dragMode = 'new';
+      selStart = {x: Math.round(dragStartImg.x), y: Math.round(dragStartImg.y), w: 0, h: 0};
+      selection = {...selStart};
+      hasSelection = true;
+      updateSelectionUI();
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragMode || !img) return;
+    const cur = getImageCoords(e);
+    const dx = cur.x - dragStartImg.x;
+    const dy = cur.y - dragStartImg.y;
+    if (Math.abs(dx) > 0.6 || Math.abs(dy) > 0.6) dragMoved = true;
+
+    let result;
+    if (dragMode === 'new'){
+      let x = selStart.x, y = selStart.y;
+      let w = cur.x - selStart.x, h = cur.y - selStart.y;
+      if (w < 0){ x = cur.x; w = -w; }
+      if (h < 0){ y = cur.y; h = -h; }
+      result = {x, y, w, h};
+    } else if (dragMode === 'move'){
+      let nx = clamp(selStart.x + dx, 0, naturalW - selStart.w);
+      let ny = clamp(selStart.y + dy, 0, naturalH - selStart.h);
+      result = {x: nx, y: ny, w: selStart.w, h: selStart.h};
+    } else if (dragMode.startsWith('resize-')){
+      applyResize(dragMode.slice(7), dx, dy);
+      result = selection;
+    }
+
+    if (result){
+      result.x = Math.round(result.x);
+      result.y = Math.round(result.y);
+      result.w = Math.max(0, Math.round(result.w));
+      result.h = Math.max(0, Math.round(result.h));
+      selection = snapGridChk.checked && (result.w > 0 && result.h > 0) ? snapToGrid(result) : result;
+    }
+
+    updateSelectionUI();
+    updateStatus();
+  });
+
+  document.addEventListener('mouseup', (e) => {
+    if (!dragMode || !img){ dragMode = null; return; }
+
+    if (dragMode === 'new' && !dragMoved){
+      if (snapGridChk.checked){
+        const cw = parseInt(cellWInput.value) || 1;
+        const ch = parseInt(cellHInput.value) || 1;
+        const coords = getImageCoords(e);
+        let cx = Math.floor(coords.x / cw) * cw;
+        let cy = Math.floor(coords.y / ch) * ch;
+        cx = clamp(cx, 0, Math.max(0, naturalW - cw));
+        cy = clamp(cy, 0, Math.max(0, naturalH - ch));
+        selection = {x: cx, y: cy, w: Math.min(cw, naturalW), h: Math.min(ch, naturalH)};
+        hasSelection = true;
+      } else {
+        hasSelection = false;
+      }
+    }
+
+    if (hasSelection && selection.w >= 1 && selection.h >= 1){
+      selection = clampSelection(selection);
+    }
+
+    dragMode = null;
+    updateSelectionUI();
+    updateStatus();
+  });
+
+  // ---------- Sidebar field edits ----------
+  function onFieldChange(){
+    if (!img) return;
+    let x = parseInt(inputX.value); if (isNaN(x)) x = 0;
+    let y = parseInt(inputY.value); if (isNaN(y)) y = 0;
+    let w = parseInt(inputW.value); if (isNaN(w)) w = 1;
+    let h = parseInt(inputH.value); if (isNaN(h)) h = 1;
+
+    x = clamp(x, 0, Math.max(0, naturalW - 1));
+    y = clamp(y, 0, Math.max(0, naturalH - 1));
+    w = clamp(w, 1, naturalW - x);
+    h = clamp(h, 1, naturalH - y);
+
+    selection = {x, y, w, h};
+    hasSelection = true;
+    updateSelectionUI();
+    updateStatus();
+  }
+  [inputX, inputY, inputW, inputH].forEach(el => el.addEventListener('input', onFieldChange));
+
+  // ---------- Keyboard nudge ----------
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') {
+      if (e.key === 'Escape') document.activeElement.blur();
+      return;
+    }
+    if (!img) return;
+
+    if (e.key === 'Escape'){
+      hasSelection = false;
+      updateSelectionUI();
+      updateStatus();
+      return;
+    }
+    if (!hasSelection) return;
+
+    const step = e.shiftKey ? 10 : 1;
+    let used = true;
+    switch (e.key){
+      case 'ArrowLeft':  selection.x = clamp(selection.x - step, 0, naturalW - selection.w); break;
+      case 'ArrowRight': selection.x = clamp(selection.x + step, 0, naturalW - selection.w); break;
+      case 'ArrowUp':    selection.y = clamp(selection.y - step, 0, naturalH - selection.h); break;
+      case 'ArrowDown':  selection.y = clamp(selection.y + step, 0, naturalH - selection.h); break;
+      default: used = false;
+    }
+    if (used){
+      e.preventDefault();
+      updateSelectionUI();
+      updateStatus();
+    }
+  });
+
+  // ---------- Cursor coordinate badge ----------
+  canvasStage.addEventListener('mousemove', (e) => {
+    if (!img) return;
+    const coords = getImageCoords(e);
+    const areaRect = canvasArea.getBoundingClientRect();
+    cursorBadge.textContent = `${Math.round(coords.x)}, ${Math.round(coords.y)}`;
+    cursorBadge.style.left = (e.clientX - areaRect.left + 14) + 'px';
+    cursorBadge.style.top  = (e.clientY - areaRect.top + 14) + 'px';
+    cursorBadge.style.display = 'block';
+  });
+  canvasStage.addEventListener('mouseleave', () => { cursorBadge.style.display = 'none'; });
+
+  // ---------- Zoom controls ----------
+  document.getElementById('zoomIn').addEventListener('click', () => setZoomCentered(zoom * 1.25));
+  document.getElementById('zoomOut').addEventListener('click', () => setZoomCentered(zoom / 1.25));
+  document.getElementById('zoom100').addEventListener('click', () => setZoomCentered(1));
+  document.getElementById('zoomFit').addEventListener('click', () => {
+    canvasArea.scrollTop = 0; canvasArea.scrollLeft = 0;
+    zoomFit(); render();
+  });
+  canvasArea.addEventListener('wheel', (e) => {
+    if (!img || !e.ctrlKey) return;
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 1/1.1;
+    setZoomCentered(zoom * factor, e.clientX, e.clientY);
+  }, {passive:false});
+
+  // ---------- Grid controls ----------
+  showGridChk.addEventListener('change', () => { if (img){ updateGridOverlay(); } });
+  [cellWInput, cellHInput].forEach(el => el.addEventListener('input', () => { if (img) updateGridOverlay(); }));
+
+  // ---------- Copy / download (current selection) ----------
+  function buildSliceObject(){
+    const name = sliceNameInput.value.trim();
+    return name
+      ? {name, x: selection.x, y: selection.y, w: selection.w, h: selection.h}
+      : {x: selection.x, y: selection.y, w: selection.w, h: selection.h};
+  }
+
+  function copyText(text, btn){
+    navigator.clipboard.writeText(text).then(() => flashButton(btn, true))
+      .catch(() => flashButton(btn, false));
+  }
+
+  function flashButton(btn, ok){
+    const original = btn.innerHTML;
+    btn.innerHTML = ok ? `${checkIcon} ${btn === copyCurrentBtn || btn === downloadCurrentBtn ? 'Copied!' : ''}` : 'Failed';
+    btn.classList.toggle('btn-success', ok);
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('btn-success');
+      btn.disabled = false;
+    }, 1100);
+  }
+
+  function downloadJSON(data, filename){
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  copyCurrentBtn.addEventListener('click', () => {
+    if (!hasSelection || selection.w < 1) return;
+    copyText(JSON.stringify(buildSliceObject(), null, 2), copyCurrentBtn);
+  });
+  downloadCurrentBtn.addEventListener('click', () => {
+    if (!hasSelection || selection.w < 1) return;
+    const name = sliceNameInput.value.trim() || 'sprite';
+    downloadJSON(buildSliceObject(), `${name}.json`);
+  });
+
+  // ---------- Slices list ----------
+  function renderSlices(){
+    slicesList.innerHTML = '';
+    sliceCount.textContent = `(${slices.length})`;
+    slicesEmpty.style.display = slices.length ? 'none' : 'block';
+    copyAllBtn.disabled = downloadAllBtn.disabled = slices.length === 0;
+
+    slices.forEach((s, idx) => {
+      const li = document.createElement('li');
+      li.className = 'slice-item';
+      li.innerHTML = `
+        <div class="slice-info">
+          <span class="slice-name">${escapeHTML(s.name)}</span>
+          <span class="slice-dims">x:${s.x} y:${s.y} w:${s.w} h:${s.h}</span>
+        </div>
+        <div class="slice-actions">
+          <button class="btn-icon btn-icon-sm" data-action="load" data-idx="${idx}" title="Load into editor">${loadIcon}</button>
+          <button class="btn-icon btn-icon-sm btn-icon-danger" data-action="delete" data-idx="${idx}" title="Remove">${trashIcon}</button>
+        </div>`;
+      slicesList.appendChild(li);
+    });
+  }
+
+  addSliceBtn.addEventListener('click', () => {
+    if (!hasSelection || selection.w < 1 || selection.h < 1) return;
+    let base = sliceNameInput.value.trim() || `sprite_${slices.length + 1}`;
+    let name = base, i = 1;
+    while (slices.some(s => s.name === name)) name = `${base}_${i++}`;
+    slices.push({name, x: selection.x, y: selection.y, w: selection.w, h: selection.h});
+    renderSlices();
+  });
+
+  slicesList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx);
+    if (btn.dataset.action === 'load'){
+      const s = slices[idx];
+      selection = {x: s.x, y: s.y, w: s.w, h: s.h};
+      sliceNameInput.value = s.name;
+      hasSelection = true;
+      updateSelectionUI();
+      updateStatus();
+    } else if (btn.dataset.action === 'delete'){
+      slices.splice(idx, 1);
+      renderSlices();
+    }
+  });
+
+  function buildAtlasObject(){
+    const sprites = {};
+    slices.forEach(s => { sprites[s.name] = {x: s.x, y: s.y, w: s.w, h: s.h}; });
+    return currentFileName
+      ? {image: currentFileName, imageWidth: naturalW, imageHeight: naturalH, sprites}
+      : {sprites};
+  }
+  copyAllBtn.addEventListener('click', () => copyText(JSON.stringify(buildAtlasObject(), null, 2), copyAllBtn));
+  downloadAllBtn.addEventListener('click', () => {
+    const base = currentFileName ? currentFileName.replace(/\.[^.]+$/, '') : 'sprites';
+    downloadJSON(buildAtlasObject(), `${base}.json`);
+  });
+
+  // ---------- File input / drag & drop / paste ----------
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) loadImageFile(file);
+    fileInput.value = '';
+  });
+
+  ['dragenter','dragover'].forEach(evt => canvasArea.addEventListener(evt, (e) => {
+    e.preventDefault();
+    canvasArea.classList.add('drag-over');
+  }));
+  ['dragleave','drop'].forEach(evt => canvasArea.addEventListener(evt, (e) => {
+    e.preventDefault();
+    canvasArea.classList.remove('drag-over');
+  }));
+  canvasArea.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) loadImageFile(file);
+  });
+
+  document.addEventListener('paste', (e) => {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const item of items){
+      if (item.type && item.type.startsWith('image/')){
+        const file = item.getAsFile();
+        if (file) loadImageFile(file);
+        e.preventDefault();
+        break;
+      }
+    }
+  });
+
+  // ---------- Resize ----------
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    if (!img) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => updateGridOverlay(), 100);
+  });
+
+  // ---------- Init ----------
+  updateStatus();
+})();
+</script>
+</body>
+</html>
