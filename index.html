@@ -243,6 +243,31 @@ button, input{font-family:inherit;}
 .slice-dims{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
 .slice-actions{display:flex;gap:6px;flex:0 0 auto;}
 
+/* ---------- Preview ---------- */
+.preview-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));
+  gap:10px;margin-top:2px;
+}
+.preview-tile{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;}
+.preview-thumb{
+  width:100%;aspect-ratio:1/1;border:1px solid var(--border-light);border-radius:var(--radius-sm);
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+  background-color:#11141b;
+  background-image:
+    linear-gradient(45deg,#1d212c 25%,transparent 25%),
+    linear-gradient(-45deg,#1d212c 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#1d212c 75%),
+    linear-gradient(-45deg,transparent 75%,#1d212c 75%);
+  background-size:12px 12px;
+  background-position:0 0,0 6px,6px -6px,-6px 0;
+}
+.preview-thumb canvas{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:-moz-crisp-edges;}
+.preview-title{
+  font-size:11px;font-weight:600;max-width:100%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;text-align:center;
+}
+.preview-dims{font-family:var(--mono);font-size:10px;color:var(--text-faint);}
+
 /* scrollbars */
 .canvas-area::-webkit-scrollbar,.sidebar::-webkit-scrollbar,.slices-list::-webkit-scrollbar{width:10px;height:10px;}
 .canvas-area::-webkit-scrollbar-thumb,.sidebar::-webkit-scrollbar-thumb,.slices-list::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:5px;}
@@ -408,6 +433,16 @@ button, input{font-family:inherit;}
         <ul class="slices-list" id="slicesList"></ul>
         <p class="slices-empty" id="slicesEmpty">Add slices to build a sprite atlas JSON you can copy or download in one go.</p>
       </div>
+
+      <div class="panel preview-panel">
+        <h2>Preview</h2>
+        <label class="checkbox-row">
+          <input type="checkbox" id="showPreview">
+          Show sprite previews
+        </label>
+        <div class="preview-grid" id="previewGrid" style="display:none;"></div>
+        <p class="slices-empty" id="previewEmpty" style="display:none;">Add slices to see previews here.</p>
+      </div>
     </aside>
   </main>
 </div>
@@ -451,6 +486,10 @@ button, input{font-family:inherit;}
   const sliceCount   = document.getElementById('sliceCount');
   const copyAllBtn   = document.getElementById('copyAll');
   const downloadAllBtn = document.getElementById('downloadAll');
+
+  const showPreviewChk = document.getElementById('showPreview');
+  const previewGrid  = document.getElementById('previewGrid');
+  const previewEmpty = document.getElementById('previewEmpty');
 
   const trashIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6h12z"/></svg>`;
   const loadIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h13M11 6l5 6-5 6"/></svg>`;
@@ -543,6 +582,7 @@ button, input{font-family:inherit;}
         render();
         updateSelectionUI();
         updateStatus();
+        renderPreviews();
       };
       image.onerror = () => {
         statusLeft.textContent = 'Could not load that file as an image.';
@@ -911,7 +951,55 @@ button, input{font-family:inherit;}
         </div>`;
       slicesList.appendChild(li);
     });
+
+    renderPreviews();
   }
+
+  // ---------- Sprite previews ----------
+  function renderPreviews(){
+    const show = showPreviewChk.checked;
+    const hasSlices = slices.length > 0;
+
+    previewGrid.style.display = (show && hasSlices) ? 'grid' : 'none';
+    previewEmpty.style.display = (show && !hasSlices) ? 'block' : 'none';
+
+    if (!show) return;
+
+    previewGrid.innerHTML = '';
+    if (!img) return;
+
+    slices.forEach(s => {
+      const tile = document.createElement('div');
+      tile.className = 'preview-tile';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'preview-thumb';
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, s.w);
+      canvas.height = Math.max(1, s.h);
+      const pctx = canvas.getContext('2d');
+      pctx.imageSmoothingEnabled = false;
+      pctx.drawImage(img, s.x, s.y, s.w, s.h, 0, 0, s.w, s.h);
+      thumb.appendChild(canvas);
+
+      const title = document.createElement('div');
+      title.className = 'preview-title';
+      title.textContent = s.name;
+      title.title = s.name;
+
+      const dims = document.createElement('div');
+      dims.className = 'preview-dims';
+      dims.textContent = `${s.w} × ${s.h}`;
+
+      tile.appendChild(thumb);
+      tile.appendChild(title);
+      tile.appendChild(dims);
+      previewGrid.appendChild(tile);
+    });
+  }
+
+  showPreviewChk.addEventListener('change', renderPreviews);
 
   addSliceBtn.addEventListener('click', () => {
     if (!hasSelection || selection.w < 1 || selection.h < 1) return;
