@@ -4,87 +4,92 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark">
-<title>Sprite Slicer — Coordinate Picker</title>
+<title>Sprite Slicer — Multi-Sheet</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root{
-  --bg:#0f1117;
-  --panel:#161922;
-  --panel-2:#1d212c;
-  --border:#2a2f3b;
-  --border-light:#3a4150;
-  --text:#eef0f4;
-  --text-dim:#8b93a3;
-  --text-faint:#565e70;
-  --accent:#ff8a3d;
-  --accent-soft:rgba(255,138,61,0.14);
-  --accent-2:#4fd1c5;
-  --accent-2-soft:rgba(79,209,197,0.14);
-  --danger:#ff6464;
-  --danger-soft:rgba(255,100,100,0.12);
-  --radius:8px;
-  --radius-sm:5px;
+  --bg:#0f1117;--panel:#161922;--panel-2:#1d212c;
+  --border:#2a2f3b;--border-light:#3a4150;
+  --text:#eef0f4;--text-dim:#8b93a3;--text-faint:#565e70;
+  --accent:#ff8a3d;--accent-soft:rgba(255,138,61,.14);
+  --accent-2:#4fd1c5;--accent-2-soft:rgba(79,209,197,.14);
+  --danger:#ff6464;--danger-soft:rgba(255,100,100,.12);
+  --radius:8px;--radius-sm:5px;
   --sans:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 }
-
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;}
-body{
-  font-family:var(--sans);
-  background:var(--bg);
-  color:var(--text);
-  overflow:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-button, input{font-family:inherit;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased;}
+button,input{font-family:inherit;}
 *:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:3px;}
-
 .app{display:flex;flex-direction:column;height:100vh;}
 
-/* ---------- Topbar ---------- */
+/* ── Topbar ── */
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
-  height:58px;flex:0 0 58px;
-  padding:0 18px;
-  border-bottom:1px solid var(--border);
-  background:var(--panel);
-  gap:16px;
+  height:52px;flex:0 0 52px;padding:0 18px;
+  border-bottom:1px solid var(--border);background:var(--panel);gap:12px;
 }
 .brand{display:flex;align-items:center;gap:10px;min-width:0;}
 .brand .logo{color:var(--accent);flex:0 0 auto;}
 .brand-text{display:flex;flex-direction:column;line-height:1.2;min-width:0;}
-.brand-text strong{font-size:15px;font-weight:700;letter-spacing:.01em;}
-.brand-text span{font-size:11px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.topbar-actions{display:flex;align-items:center;gap:10px;}
-.file-meta{font-family:var(--mono);font-size:12px;color:var(--text-dim);white-space:nowrap;}
+.brand-text strong{font-size:14px;font-weight:700;}
+.brand-text span{font-size:11px;color:var(--text-faint);}
+.topbar-actions{display:flex;align-items:center;gap:8px;}
 
-/* ---------- Buttons ---------- */
+/* ── Sheet tabs ── */
+.sheets-bar{
+  flex:0 0 36px;display:flex;align-items:stretch;
+  border-bottom:1px solid var(--border);background:var(--panel-2);
+  overflow-x:auto;overflow-y:hidden;
+}
+.sheets-bar::-webkit-scrollbar{height:3px;}
+.sheets-bar::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:2px;}
+.sheets-tabs{display:flex;align-items:stretch;padding:0 4px;gap:1px;flex:1;}
+.sheet-tab{
+  display:flex;align-items:center;gap:5px;
+  padding:0 5px 0 11px;max-width:170px;min-width:0;
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  font-size:12px;color:var(--text-dim);user-select:none;white-space:nowrap;
+  transition:color .12s,border-color .12s;
+}
+.sheet-tab:hover{color:var(--text);}
+.sheet-tab.active{color:var(--text);border-bottom-color:var(--accent);}
+.sheet-tab-name{overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.sheet-tab-close{
+  flex:0 0 16px;height:16px;display:flex;align-items:center;justify-content:center;
+  border-radius:3px;color:var(--text-faint);transition:color .12s,background .12s;
+}
+.sheet-tab-close:hover{color:var(--danger);background:var(--danger-soft);}
+
+/* ── Buttons ── */
 .btn{
   display:inline-flex;align-items:center;gap:6px;
-  padding:8px 14px;font-size:13px;font-weight:500;
+  padding:7px 13px;font-size:12.5px;font-weight:500;
   background:var(--panel-2);color:var(--text);
   border:1px solid var(--border-light);border-radius:var(--radius-sm);
-  cursor:pointer;transition:border-color .15s,color .15s,background .15s,opacity .15s;
-  white-space:nowrap;
+  cursor:pointer;white-space:nowrap;
+  transition:border-color .15s,color .15s,background .15s,opacity .15s;
 }
 .btn:hover{border-color:var(--accent);color:#fff;}
 .btn-primary{background:var(--accent);border-color:var(--accent);color:#1c1102;font-weight:600;}
-.btn-primary:hover{filter:brightness(1.08);border-color:var(--accent);color:#1c1102;}
+.btn-primary:hover{filter:brightness(1.1);border-color:var(--accent);color:#1c1102;}
+.btn-teal{background:var(--accent-2-soft);border-color:var(--accent-2);color:var(--accent-2);font-weight:600;}
+.btn-teal:hover{background:var(--accent-2);color:#0f1117;}
 .btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
 .btn-ghost:hover{color:var(--text);border-color:var(--border-light);}
 .btn-block{width:100%;justify-content:center;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
-.btn:disabled:hover{border-color:var(--border-light);color:var(--text);}
+.btn:disabled:hover{border-color:var(--border-light);color:var(--text);filter:none;}
 .btn-success{background:var(--accent-2-soft)!important;border-color:var(--accent-2)!important;color:var(--accent-2)!important;}
-
 .btn-icon{
   display:inline-flex;align-items:center;justify-content:center;
   width:30px;height:30px;padding:0;
   background:transparent;color:var(--text-dim);
   border:1px solid var(--border-light);border-radius:var(--radius-sm);
-  cursor:pointer;transition:border-color .15s,color .15s,background .15s;
+  cursor:pointer;transition:border-color .15s,color .15s;
 }
 .btn-icon:hover{color:var(--text);border-color:var(--accent);}
 .btn-icon:disabled{opacity:.35;cursor:not-allowed;}
@@ -92,10 +97,22 @@ button, input{font-family:inherit;}
 .btn-icon-sm{width:26px;height:26px;}
 .btn-icon-danger:hover{color:var(--danger);border-color:var(--danger);}
 
-/* ---------- Workspace ---------- */
+/* ── Workspace ── */
 .workspace{display:flex;flex:1;min-height:0;}
 .stage-wrap{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;}
 
+/* ── Paste banner ── */
+.paste-banner{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;
+  padding:0 16px;height:40px;
+  background:rgba(79,209,197,.08);border-bottom:1px solid var(--accent-2);
+  font-size:12.5px;flex-shrink:0;
+}
+.paste-banner strong{color:var(--accent-2);font-weight:600;}
+.paste-banner .hint{color:var(--text-dim);}
+.paste-banner .pactions{margin-left:auto;display:flex;gap:8px;}
+
+/* ── Canvas area ── */
 .canvas-area{
   position:relative;flex:1;overflow:auto;padding:48px;
   background-color:#1b1e28;
@@ -106,9 +123,7 @@ button, input{font-family:inherit;}
     linear-gradient(-45deg,transparent 75%,#242837 75%);
   background-size:24px 24px;
   background-position:0 0,0 12px,12px -12px,-12px 0;
-  transition:outline-color .15s;
-  outline:2px dashed transparent;
-  outline-offset:-2px;
+  outline:2px dashed transparent;outline-offset:-2px;transition:outline-color .15s;
 }
 .canvas-area.drag-over{outline-color:var(--accent);background-color:#20242f;}
 
@@ -116,16 +131,15 @@ button, input{font-family:inherit;}
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   display:flex;flex-direction:column;align-items:center;gap:14px;
   padding:48px 56px;border:1.5px dashed var(--border-light);border-radius:14px;
-  text-align:center;color:var(--text-dim);
-  pointer-events:none;
+  text-align:center;pointer-events:none;
 }
-.empty-state .empty-icon{color:var(--text-faint);}
+.empty-state .ei{color:var(--text-faint);}
 .empty-state h3{margin:0;font-size:16px;font-weight:600;color:var(--text);}
-.empty-state p{margin:0;font-size:13px;color:var(--text-faint);max-width:280px;line-height:1.5;}
+.empty-state p{margin:0;font-size:13px;color:var(--text-faint);max-width:290px;line-height:1.55;}
 .empty-state .btn{pointer-events:auto;margin-top:4px;}
 
 .canvas-stage{position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 12px 40px rgba(0,0,0,.5);}
-.canvas-stage canvas{display:block;image-rendering:pixelated;image-rendering:-moz-crisp-edges;}
+.canvas-stage>canvas{display:block;image-rendering:pixelated;image-rendering:-moz-crisp-edges;}
 
 .grid-overlay{
   position:absolute;top:0;left:0;pointer-events:none;z-index:1;
@@ -134,28 +148,24 @@ button, input{font-family:inherit;}
     repeating-linear-gradient(to bottom,rgba(255,255,255,.18) 0,rgba(255,255,255,.18) 1px,transparent 1px,transparent 100%);
 }
 
+/* ── Selection ── */
 .selection{
   position:absolute;z-index:2;border:1px solid var(--accent);
   background:rgba(255,138,61,.10);cursor:move;
-  box-shadow:0 0 0 1px var(--accent),0 0 18px 2px rgba(255,138,61,.30);
   animation:selPulse 2.2s ease-in-out infinite;
 }
 @keyframes selPulse{
   0%,100%{box-shadow:0 0 0 1px var(--accent),0 0 14px 1px rgba(255,138,61,.22);}
   50%{box-shadow:0 0 0 1px var(--accent),0 0 22px 4px rgba(255,138,61,.42);}
 }
-@media (prefers-reduced-motion:reduce){.selection{animation:none;}}
-
+@media(prefers-reduced-motion:reduce){.selection,.paste-overlay{animation:none;}}
 .sel-tag{
   position:absolute;top:0;left:0;transform:translateY(-100%);
   background:var(--accent);color:#1c1102;font-family:var(--mono);
   font-size:11px;font-weight:600;padding:2px 6px;border-radius:3px 3px 0 0;
   white-space:nowrap;pointer-events:none;
 }
-.handle{
-  position:absolute;width:10px;height:10px;background:var(--accent);
-  border:2px solid var(--bg);border-radius:2px;z-index:3;
-}
+.handle{position:absolute;width:10px;height:10px;background:var(--accent);border:2px solid var(--bg);border-radius:2px;z-index:3;}
 .handle-nw{top:-6px;left:-6px;cursor:nwse-resize;}
 .handle-n{top:-6px;left:50%;margin-left:-5px;cursor:ns-resize;}
 .handle-ne{top:-6px;right:-6px;cursor:nesw-resize;}
@@ -165,13 +175,33 @@ button, input{font-family:inherit;}
 .handle-sw{bottom:-6px;left:-6px;cursor:nesw-resize;}
 .handle-w{top:50%;left:-6px;margin-top:-5px;cursor:ew-resize;}
 
+/* ── Paste overlay ── */
+.paste-overlay{
+  position:absolute;z-index:10;cursor:move;
+  outline:2px solid var(--accent-2);
+  animation:pastePulse 2s ease-in-out infinite;
+}
+.paste-overlay>canvas{display:block;image-rendering:pixelated;image-rendering:-moz-crisp-edges;}
+@keyframes pastePulse{
+  0%,100%{box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 14px 1px rgba(79,209,197,.25);}
+  50%{box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 22px 4px rgba(79,209,197,.45);}
+}
+.paste-tag{
+  position:absolute;top:0;right:0;transform:translateY(-100%);
+  background:var(--accent-2);color:#0f1117;font-family:var(--mono);
+  font-size:11px;font-weight:600;padding:2px 6px;border-radius:3px 3px 0 0;
+  white-space:nowrap;pointer-events:none;
+}
+
+/* ── Cursor badge ── */
 .cursor-badge{
-  position:absolute;z-index:5;pointer-events:none;
+  position:absolute;z-index:20;pointer-events:none;
   background:rgba(15,17,23,.9);border:1px solid var(--border-light);
   color:var(--text-dim);font-family:var(--mono);font-size:11px;
   padding:3px 7px;border-radius:4px;display:none;
 }
 
+/* ── Zoom controls ── */
 .zoom-controls{
   position:absolute;right:16px;bottom:48px;z-index:6;
   display:flex;align-items:center;gap:2px;
@@ -180,23 +210,21 @@ button, input{font-family:inherit;}
 }
 .zoom-controls .btn-icon{border-color:transparent;}
 .zoom-controls .btn-icon:hover{border-color:var(--border-light);}
-.zoom-label{
-  font-family:var(--mono);font-size:12px;color:var(--text-dim);
-  width:52px;text-align:center;user-select:none;
-}
+.zoom-label{font-family:var(--mono);font-size:12px;color:var(--text-dim);width:52px;text-align:center;user-select:none;}
 
+/* ── Status bar ── */
 .status-bar{
   flex:0 0 32px;display:flex;align-items:center;justify-content:space-between;
   padding:0 16px;border-top:1px solid var(--border);background:var(--panel);
   font-family:var(--mono);font-size:11.5px;color:var(--text-faint);
   white-space:nowrap;overflow:hidden;
 }
-.status-bar .status-left{overflow:hidden;text-overflow:ellipsis;}
-.status-bar .status-right{flex:0 0 auto;margin-left:16px;color:var(--text-faint);}
+.status-bar .sl{overflow:hidden;text-overflow:ellipsis;}
+.status-bar .sr{flex:0 0 auto;margin-left:16px;}
 
-/* ---------- Sidebar ---------- */
+/* ── Sidebar ── */
 .sidebar{
-  width:328px;flex:0 0 328px;border-left:1px solid var(--border);
+  width:332px;flex:0 0 332px;border-left:1px solid var(--border);
   background:var(--panel);overflow-y:auto;display:flex;flex-direction:column;
 }
 .panel{padding:18px;border-bottom:1px solid var(--border);}
@@ -207,332 +235,381 @@ button, input{font-family:inherit;}
 }
 .panel h2 .count{color:var(--text-faint);font-weight:500;letter-spacing:0;text-transform:none;}
 .panel h2 .panel-actions{display:flex;gap:6px;}
-
 .field{display:block;margin-bottom:12px;}
 .field:last-child{margin-bottom:0;}
 .field label{display:block;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;}
-.field input[type="text"],
-.field input[type="number"]{
+.field input[type="text"],.field input[type="number"]{
   width:100%;background:var(--bg);border:1px solid var(--border-light);
   color:var(--text);padding:8px 9px;border-radius:var(--radius-sm);font-size:13px;
 }
 .field input[type="number"]{font-family:var(--mono);}
 .field input:disabled{opacity:.4;cursor:not-allowed;}
 .field input:focus{border-color:var(--accent);}
-
 .grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-
 .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:var(--text-dim);user-select:none;cursor:pointer;}
 .checkbox-row:last-of-type{margin-bottom:14px;}
 .checkbox-row input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
-
-.action-row{display:flex;gap:8px;}
+.action-row{display:flex;gap:8px;margin-bottom:8px;}
 .action-row .btn{flex:1;}
+.action-row:last-of-type{margin-bottom:0;}
 
+/* ── Clipboard indicator ── */
+.clip-indicator{
+  display:flex;align-items:center;gap:8px;padding:7px 9px;
+  background:var(--accent-2-soft);border:1px solid var(--accent-2);
+  border-radius:var(--radius-sm);margin-bottom:10px;font-size:12px;color:var(--accent-2);
+}
+.clip-thumb{
+  width:28px;height:28px;flex:0 0 28px;border-radius:3px;
+  image-rendering:pixelated;border:1px solid rgba(79,209,197,.3);
+}
+.clip-info{min-width:0;}
+.clip-info strong{display:block;font-size:11.5px;font-weight:600;}
+.clip-info span{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);}
+
+/* ── Slices ── */
 .slices-panel{flex:1;display:flex;flex-direction:column;min-height:120px;}
 .slices-list{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;}
 .slices-empty{font-size:12.5px;color:var(--text-faint);padding:8px 0;line-height:1.5;}
-.slice-item{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:8px 0;border-bottom:1px solid var(--border);
-}
+.slice-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
 .slice-item:last-child{border-bottom:none;}
 .slice-info{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden;}
 .slice-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .slice-dims{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
 .slice-actions{display:flex;gap:6px;flex:0 0 auto;}
 
-/* ---------- Preview ---------- */
-.preview-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));
-  gap:10px;margin-top:2px;
-}
+/* ── Preview ── */
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px;margin-top:2px;}
 .preview-tile{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;}
 .preview-thumb{
   width:100%;aspect-ratio:1/1;border:1px solid var(--border-light);border-radius:var(--radius-sm);
   overflow:hidden;display:flex;align-items:center;justify-content:center;
   background-color:#11141b;
-  background-image:
-    linear-gradient(45deg,#1d212c 25%,transparent 25%),
-    linear-gradient(-45deg,#1d212c 25%,transparent 25%),
-    linear-gradient(45deg,transparent 75%,#1d212c 75%),
-    linear-gradient(-45deg,transparent 75%,#1d212c 75%);
-  background-size:12px 12px;
-  background-position:0 0,0 6px,6px -6px,-6px 0;
+  background-image:linear-gradient(45deg,#1d212c 25%,transparent 25%),linear-gradient(-45deg,#1d212c 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1d212c 75%),linear-gradient(-45deg,transparent 75%,#1d212c 75%);
+  background-size:12px 12px;background-position:0 0,0 6px,6px -6px,-6px 0;
 }
 .preview-thumb canvas{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:-moz-crisp-edges;}
-.preview-title{
-  font-size:11px;font-weight:600;max-width:100%;overflow:hidden;
-  text-overflow:ellipsis;white-space:nowrap;text-align:center;
-}
+.preview-title{font-size:11px;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center;}
 .preview-dims{font-family:var(--mono);font-size:10px;color:var(--text-faint);}
 
-/* scrollbars */
-.canvas-area::-webkit-scrollbar,.sidebar::-webkit-scrollbar,.slices-list::-webkit-scrollbar{width:10px;height:10px;}
-.canvas-area::-webkit-scrollbar-thumb,.sidebar::-webkit-scrollbar-thumb,.slices-list::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:5px;}
+/* ── Scrollbars ── */
+.canvas-area::-webkit-scrollbar,.sidebar::-webkit-scrollbar,.slices-list::-webkit-scrollbar,.sheets-bar::-webkit-scrollbar{width:10px;height:10px;}
+.canvas-area::-webkit-scrollbar-thumb,.sidebar::-webkit-scrollbar-thumb,.slices-list::-webkit-scrollbar-thumb,.sheets-bar::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:5px;}
 .canvas-area::-webkit-scrollbar-track,.sidebar::-webkit-scrollbar-track,.slices-list::-webkit-scrollbar-track{background:transparent;}
 
-/* ---------- Responsive ---------- */
-@media (max-width:860px){
+/* ── Responsive ── */
+@media(max-width:860px){
   .workspace{flex-direction:column;}
   .sidebar{width:100%;flex:0 0 auto;max-height:46vh;border-left:none;border-top:1px solid var(--border);}
   .stage-wrap{min-height:280px;}
   .brand-text span{display:none;}
-  .file-meta{display:none;}
 }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <header class="topbar">
-    <div class="brand">
-      <svg class="logo" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="3" stroke-dasharray="3 3.2"/>
-        <path d="M12 8v8M8 12h8"/>
-      </svg>
-      <div class="brand-text">
-        <strong>Sprite Slicer</strong>
-        <span>sprite sheet coordinate picker</span>
+<header class="topbar">
+  <div class="brand">
+    <svg class="logo" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="3" stroke-dasharray="3 3.2"/>
+      <path d="M12 8v8M8 12h8"/>
+    </svg>
+    <div class="brand-text">
+      <strong>Sprite Slicer</strong>
+      <span>multi-sheet coordinate picker</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <label class="btn btn-primary" for="fileInput">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      Add Sheet
+    </label>
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    <button class="btn" id="exportBtn" disabled title="Export current sheet as PNG">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      Export PNG
+    </button>
+  </div>
+</header>
+
+<!-- Sheet tabs -->
+<div class="sheets-bar" id="sheetsBar" style="display:none;">
+  <div class="sheets-tabs" id="sheetsTabs"></div>
+</div>
+
+<main class="workspace">
+  <div class="stage-wrap">
+
+    <!-- Paste mode banner -->
+    <div class="paste-banner" id="pasteBanner" style="display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-2);flex:0 0 auto"><rect x="8" y="4" width="10" height="4" rx="1"/><path d="M16 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V8"/></svg>
+      <strong>Paste mode</strong>
+      <span class="hint">Drag to position · Arrow keys to nudge · Enter to commit · Esc to cancel</span>
+      <div class="pactions">
+        <button class="btn btn-teal" id="commitBtn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Commit
+        </button>
+        <button class="btn btn-ghost" id="cancelPasteBtn">Cancel</button>
       </div>
     </div>
-    <div class="topbar-actions">
-      <span class="file-meta" id="fileMeta"></span>
-      <label class="btn btn-primary" for="fileInput" id="uploadLabel">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-        Upload image
+
+    <div class="canvas-area" id="canvasArea">
+      <div class="empty-state" id="emptyState">
+        <svg class="ei" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <circle cx="9" cy="9" r="2"/>
+          <path d="M21 15l-5-5L5 21"/>
+        </svg>
+        <h3>Drop sprite sheets here</h3>
+        <p>PNG, JPG, GIF or WebP. Load multiple sheets to copy and paste sprites between them.</p>
+        <label class="btn btn-primary" for="fileInput">Choose image(s)</label>
+      </div>
+
+      <div class="canvas-stage" id="canvasStage" style="display:none;" tabindex="-1">
+        <canvas id="imageCanvas"></canvas>
+        <div class="grid-overlay" id="gridOverlay" style="display:none;"></div>
+        <div class="selection" id="selection" style="display:none;">
+          <div class="sel-tag" id="selTag"></div>
+          <div class="handle handle-nw" data-handle="nw"></div>
+          <div class="handle handle-n"  data-handle="n"></div>
+          <div class="handle handle-ne" data-handle="ne"></div>
+          <div class="handle handle-e"  data-handle="e"></div>
+          <div class="handle handle-se" data-handle="se"></div>
+          <div class="handle handle-s"  data-handle="s"></div>
+          <div class="handle handle-sw" data-handle="sw"></div>
+          <div class="handle handle-w"  data-handle="w"></div>
+        </div>
+        <!-- Paste overlay lives inside canvasStage for correct absolute positioning -->
+        <div class="paste-overlay" id="pasteOverlay" style="display:none;">
+          <canvas id="pasteCanvas"></canvas>
+          <div class="paste-tag" id="pasteTag"></div>
+        </div>
+      </div>
+
+      <div class="cursor-badge" id="cursorBadge"></div>
+
+      <div class="zoom-controls" id="zoomControls" style="display:none;">
+        <button class="btn-icon" id="zoomOut" title="Zoom out">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>
+        </button>
+        <span class="zoom-label" id="zoomLabel">100%</span>
+        <button class="btn-icon" id="zoomIn" title="Zoom in">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="btn-icon" id="zoomFitBtn" style="width:auto;padding:0 8px;font-size:11px;" title="Fit">Fit</button>
+        <button class="btn-icon" id="zoom100Btn" style="width:auto;padding:0 8px;font-size:11px;" title="1:1">1:1</button>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <span class="sl" id="statusLeft">Add a sprite sheet to get started</span>
+      <span class="sr" id="statusRight"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <!-- Selection panel -->
+    <div class="panel">
+      <h2>Selection</h2>
+      <div class="field">
+        <label for="sliceName">Name</label>
+        <input type="text" id="sliceName" placeholder="player_idle_01" autocomplete="off">
+      </div>
+      <div class="grid4">
+        <div class="field"><label for="inputX">X</label><input type="number" id="inputX" value="0" disabled></div>
+        <div class="field"><label for="inputY">Y</label><input type="number" id="inputY" value="0" disabled></div>
+        <div class="field"><label for="inputW">Width</label><input type="number" id="inputW" value="0" min="1" disabled></div>
+        <div class="field"><label for="inputH">Height</label><input type="number" id="inputH" value="0" min="1" disabled></div>
+      </div>
+      <!-- JSON row -->
+      <div class="action-row">
+        <button class="btn" id="copyCurrent" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy JSON
+        </button>
+        <button class="btn" id="downloadCurrent" disabled>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          Download
+        </button>
+      </div>
+      <!-- Pixel clipboard row -->
+      <div class="action-row">
+        <button class="btn" id="copyPixels" disabled title="Copy selected pixels (Ctrl+C)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy
+        </button>
+        <button class="btn" id="cutPixels" disabled title="Cut selected pixels (Ctrl+X)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="20" r="2"/><circle cx="6" cy="4" r="2"/><path d="M6 6v12M20 4L8.12 15.88M14.47 14.48L20 20"/></svg>
+          Cut
+        </button>
+      </div>
+      <!-- Clipboard indicator (hidden until copied) -->
+      <div class="clip-indicator" id="clipIndicator" style="display:none;">
+        <canvas class="clip-thumb" id="clipThumb" width="28" height="28"></canvas>
+        <div class="clip-info">
+          <strong>Clipboard</strong>
+          <span id="clipDims"></span>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-block" id="pastePixels" disabled title="Paste on this sheet (Ctrl+V)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="4" width="10" height="4" rx="1"/><path d="M16 4H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V8"/></svg>
+          Paste  <kbd style="font-size:10px;opacity:.6;margin-left:2px;">Ctrl+V</kbd>
+        </button>
+      </div>
+      <button class="btn btn-block" id="addSlice" disabled>+ Add to list</button>
+    </div>
+
+    <!-- Grid panel -->
+    <div class="panel">
+      <h2>Grid</h2>
+      <label class="checkbox-row"><input type="checkbox" id="showGrid"> Show grid overlay</label>
+      <label class="checkbox-row"><input type="checkbox" id="snapGrid"> Snap to grid (click a cell to select it)</label>
+      <div class="grid2">
+        <div class="field"><label for="cellW">Cell width</label><input type="number" id="cellW" value="32" min="1"></div>
+        <div class="field"><label for="cellH">Cell height</label><input type="number" id="cellH" value="32" min="1"></div>
+      </div>
+    </div>
+
+    <!-- Saved slices panel -->
+    <div class="panel slices-panel">
+      <h2>
+        Saved slices <span class="count" id="sliceCount">(0)</span>
+        <span class="panel-actions">
+          <button class="btn-icon btn-icon-sm" id="copyAll" title="Copy all as JSON" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+          <button class="btn-icon btn-icon-sm" id="downloadAll" title="Download atlas JSON" disabled>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          </button>
+        </span>
+      </h2>
+      <ul class="slices-list" id="slicesList"></ul>
+      <p class="slices-empty" id="slicesEmpty">Add slices to build a sprite atlas JSON.</p>
+    </div>
+
+    <!-- Preview panel -->
+    <div class="panel" style="border-bottom:none;">
+      <h2>Preview</h2>
+      <label class="checkbox-row" style="margin-bottom:0;">
+        <input type="checkbox" id="showPreview"> Show sprite previews
       </label>
-      <input type="file" id="fileInput" accept="image/*" hidden>
+      <div class="preview-grid" id="previewGrid" style="display:none;margin-top:12px;"></div>
+      <p class="slices-empty" id="previewEmpty" style="display:none;">Add slices to see previews.</p>
     </div>
-  </header>
-
-  <main class="workspace">
-    <div class="stage-wrap">
-      <div class="canvas-area" id="canvasArea">
-        <div class="empty-state" id="emptyState">
-          <svg class="empty-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <circle cx="9" cy="9" r="2"/>
-            <path d="M21 15l-5-5L5 21"/>
-          </svg>
-          <h3>Drop a sprite sheet here</h3>
-          <p>PNG, JPG, GIF or WebP. Or click below to browse — you can also paste an image with Ctrl/Cmd+V.</p>
-          <label class="btn btn-primary" for="fileInput">Choose image</label>
-        </div>
-
-        <div class="canvas-stage" id="canvasStage" style="display:none;">
-          <canvas id="imageCanvas"></canvas>
-          <div class="grid-overlay" id="gridOverlay" style="display:none;"></div>
-          <div class="selection" id="selection" style="display:none;">
-            <div class="sel-tag" id="selTag"></div>
-            <div class="handle handle-nw" data-handle="nw"></div>
-            <div class="handle handle-n" data-handle="n"></div>
-            <div class="handle handle-ne" data-handle="ne"></div>
-            <div class="handle handle-e" data-handle="e"></div>
-            <div class="handle handle-se" data-handle="se"></div>
-            <div class="handle handle-s" data-handle="s"></div>
-            <div class="handle handle-sw" data-handle="sw"></div>
-            <div class="handle handle-w" data-handle="w"></div>
-          </div>
-        </div>
-
-        <div class="cursor-badge" id="cursorBadge"></div>
-
-        <div class="zoom-controls" id="zoomControls" style="display:none;">
-          <button class="btn-icon" id="zoomOut" title="Zoom out">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>
-          </button>
-          <span class="zoom-label" id="zoomLabel">100%</span>
-          <button class="btn-icon" id="zoomIn" title="Zoom in">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          </button>
-          <button class="btn-icon" id="zoomFit" title="Fit to view" style="width:auto;padding:0 8px;font-size:11px;">Fit</button>
-          <button class="btn-icon" id="zoom100" title="100%" style="width:auto;padding:0 8px;font-size:11px;">1:1</button>
-        </div>
-      </div>
-
-      <div class="status-bar">
-        <span class="status-left" id="statusLeft">Upload a sprite sheet to get started</span>
-        <span class="status-right" id="statusRight"></span>
-      </div>
-    </div>
-
-    <aside class="sidebar">
-      <div class="panel">
-        <h2>Selection</h2>
-        <div class="field">
-          <label for="sliceName">Name</label>
-          <input type="text" id="sliceName" placeholder="player_idle_01" autocomplete="off">
-        </div>
-        <div class="grid4">
-          <div class="field">
-            <label for="inputX">X</label>
-            <input type="number" id="inputX" value="0" disabled>
-          </div>
-          <div class="field">
-            <label for="inputY">Y</label>
-            <input type="number" id="inputY" value="0" disabled>
-          </div>
-          <div class="field">
-            <label for="inputW">Width</label>
-            <input type="number" id="inputW" value="0" min="1" disabled>
-          </div>
-          <div class="field">
-            <label for="inputH">Height</label>
-            <input type="number" id="inputH" value="0" min="1" disabled>
-          </div>
-        </div>
-        <div class="action-row" style="margin-bottom:8px;">
-          <button class="btn" id="copyCurrent" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            Copy JSON
-          </button>
-          <button class="btn" id="downloadCurrent" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-            Download
-          </button>
-        </div>
-        <button class="btn btn-block" id="addSlice" disabled>+ Add to list</button>
-      </div>
-
-      <div class="panel">
-        <h2>Grid</h2>
-        <label class="checkbox-row">
-          <input type="checkbox" id="showGrid">
-          Show grid overlay
-        </label>
-        <label class="checkbox-row">
-          <input type="checkbox" id="snapGrid">
-          Snap to grid (click a cell to select it)
-        </label>
-        <div class="grid2">
-          <div class="field">
-            <label for="cellW">Cell width</label>
-            <input type="number" id="cellW" value="32" min="1">
-          </div>
-          <div class="field">
-            <label for="cellH">Cell height</label>
-            <input type="number" id="cellH" value="32" min="1">
-          </div>
-        </div>
-      </div>
-
-      <div class="panel slices-panel">
-        <h2>
-          Saved slices <span class="count" id="sliceCount">(0)</span>
-          <span class="panel-actions">
-            <button class="btn-icon btn-icon-sm" id="copyAll" title="Copy all as JSON" disabled>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            </button>
-            <button class="btn-icon btn-icon-sm" id="downloadAll" title="Download all as JSON" disabled>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-            </button>
-          </span>
-        </h2>
-        <ul class="slices-list" id="slicesList"></ul>
-        <p class="slices-empty" id="slicesEmpty">Add slices to build a sprite atlas JSON you can copy or download in one go.</p>
-      </div>
-
-      <div class="panel preview-panel">
-        <h2>Preview</h2>
-        <label class="checkbox-row">
-          <input type="checkbox" id="showPreview">
-          Show sprite previews
-        </label>
-        <div class="preview-grid" id="previewGrid" style="display:none;"></div>
-        <p class="slices-empty" id="previewEmpty" style="display:none;">Add slices to see previews here.</p>
-      </div>
-    </aside>
-  </main>
+  </aside>
+</main>
 </div>
 
 <script>
 (() => {
-  // ---------- DOM refs ----------
-  const fileInput   = document.getElementById('fileInput');
-  const uploadLabel = document.getElementById('uploadLabel');
-  const fileMeta    = document.getElementById('fileMeta');
-  const canvasArea  = document.getElementById('canvasArea');
-  const emptyState  = document.getElementById('emptyState');
-  const canvasStage = document.getElementById('canvasStage');
-  const canvas      = document.getElementById('imageCanvas');
-  const ctx         = canvas.getContext('2d');
-  const gridOverlay = document.getElementById('gridOverlay');
-  const selectionEl = document.getElementById('selection');
-  const selTag      = document.getElementById('selTag');
-  const cursorBadge = document.getElementById('cursorBadge');
-  const zoomControls= document.getElementById('zoomControls');
-  const zoomLabel   = document.getElementById('zoomLabel');
-  const statusLeft  = document.getElementById('statusLeft');
-  const statusRight = document.getElementById('statusRight');
+  // ══════════════════════════════════════════════════
+  // DOM refs
+  // ══════════════════════════════════════════════════
+  const fileInput     = document.getElementById('fileInput');
+  const exportBtn     = document.getElementById('exportBtn');
+  const sheetsBar     = document.getElementById('sheetsBar');
+  const sheetsTabs    = document.getElementById('sheetsTabs');
+  const pasteBanner   = document.getElementById('pasteBanner');
+  const commitBtn     = document.getElementById('commitBtn');
+  const cancelPasteBtn= document.getElementById('cancelPasteBtn');
+  const canvasArea    = document.getElementById('canvasArea');
+  const emptyState    = document.getElementById('emptyState');
+  const canvasStage   = document.getElementById('canvasStage');
+  const mainCanvas    = document.getElementById('imageCanvas');
+  const mainCtx       = mainCanvas.getContext('2d');
+  const gridOverlay   = document.getElementById('gridOverlay');
+  const selectionEl   = document.getElementById('selection');
+  const selTag        = document.getElementById('selTag');
+  const pasteOverlay  = document.getElementById('pasteOverlay');
+  const pasteCanvas   = document.getElementById('pasteCanvas');
+  const pasteTag      = document.getElementById('pasteTag');
+  const cursorBadge   = document.getElementById('cursorBadge');
+  const zoomControls  = document.getElementById('zoomControls');
+  const zoomLabel     = document.getElementById('zoomLabel');
+  const statusLeft    = document.getElementById('statusLeft');
+  const statusRight   = document.getElementById('statusRight');
 
-  const sliceNameInput = document.getElementById('sliceName');
-  const inputX = document.getElementById('inputX');
-  const inputY = document.getElementById('inputY');
-  const inputW = document.getElementById('inputW');
-  const inputH = document.getElementById('inputH');
-  const copyCurrentBtn = document.getElementById('copyCurrent');
-  const downloadCurrentBtn = document.getElementById('downloadCurrent');
-  const addSliceBtn = document.getElementById('addSlice');
+  const sliceNameInput= document.getElementById('sliceName');
+  const inputX        = document.getElementById('inputX');
+  const inputY        = document.getElementById('inputY');
+  const inputW        = document.getElementById('inputW');
+  const inputH        = document.getElementById('inputH');
+  const copyCurrentBtn= document.getElementById('copyCurrent');
+  const downloadBtn   = document.getElementById('downloadCurrent');
+  const copyPixelsBtn = document.getElementById('copyPixels');
+  const cutPixelsBtn  = document.getElementById('cutPixels');
+  const pastePixelsBtn= document.getElementById('pastePixels');
+  const clipIndicator = document.getElementById('clipIndicator');
+  const clipThumb     = document.getElementById('clipThumb');
+  const clipDims      = document.getElementById('clipDims');
+  const addSliceBtn   = document.getElementById('addSlice');
+  const showGridChk   = document.getElementById('showGrid');
+  const snapGridChk   = document.getElementById('snapGrid');
+  const cellWInput    = document.getElementById('cellW');
+  const cellHInput    = document.getElementById('cellH');
+  const slicesList    = document.getElementById('slicesList');
+  const slicesEmpty   = document.getElementById('slicesEmpty');
+  const sliceCount    = document.getElementById('sliceCount');
+  const copyAllBtn    = document.getElementById('copyAll');
+  const downloadAllBtn= document.getElementById('downloadAll');
+  const showPreviewChk= document.getElementById('showPreview');
+  const previewGrid   = document.getElementById('previewGrid');
+  const previewEmpty  = document.getElementById('previewEmpty');
 
-  const showGridChk = document.getElementById('showGrid');
-  const snapGridChk = document.getElementById('snapGrid');
-  const cellWInput  = document.getElementById('cellW');
-  const cellHInput  = document.getElementById('cellH');
-
-  const slicesList   = document.getElementById('slicesList');
-  const slicesEmpty  = document.getElementById('slicesEmpty');
-  const sliceCount   = document.getElementById('sliceCount');
-  const copyAllBtn   = document.getElementById('copyAll');
-  const downloadAllBtn = document.getElementById('downloadAll');
-
-  const showPreviewChk = document.getElementById('showPreview');
-  const previewGrid  = document.getElementById('previewGrid');
-  const previewEmpty = document.getElementById('previewEmpty');
-
+  // Icons
   const trashIcon = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6h12z"/></svg>`;
   const loadIcon  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h13M11 6l5 6-5 6"/></svg>`;
   const checkIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`;
 
-  // ---------- State ----------
-  let img = null;
-  let naturalW = 0, naturalH = 0;
-  let zoom = 1;
-  let currentFileName = '';
+  // ══════════════════════════════════════════════════
+  // State
+  // ══════════════════════════════════════════════════
+  let sheets        = [];  // array of sheet objects
+  let activeIdx     = -1;  // index into sheets
 
-  let hasSelection = false;
-  let selection = {x:0, y:0, w:0, h:0};
-  let slices = [];
+  let clipboard     = null; // {imageData, w, h, thumbCanvas}
+  let pasteState    = null; // {tmpCanvas, w, h, x, y} — active paste
 
-  let dragMode = null;       // 'new' | 'move' | 'resize-<handle>'
-  let dragStartImg = {x:0, y:0};
-  let selStart = {x:0, y:0, w:0, h:0};
-  let dragMoved = false;
+  let hasSelection  = false;
+  let selection     = {x:0, y:0, w:0, h:0};
+  let dragMode      = null; // 'new' | 'move' | 'resize-<handle>'
+  let dragStartImg  = {x:0, y:0};
+  let selStart      = {x:0, y:0, w:0, h:0};
+  let dragMoved     = false;
+  let pasteDrag     = null; // {clientX,clientY,startX,startY}
 
-  // ---------- Helpers ----------
-  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+  let uidSeq        = 0;
 
-  function getMaxZoom(){
-    return Math.max(1, Math.min(32, 8000 / Math.max(naturalW, naturalH, 1)));
+  // ══════════════════════════════════════════════════
+  // Accessors & helpers
+  // ══════════════════════════════════════════════════
+  const sheet    = () => sheets[activeIdx] || null;
+  const zoom     = () => { const s = sheet(); return s ? s.zoom : 1; };
+  const clamp    = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+  function maxZoom(s) {
+    s = s || sheet();
+    return s ? Math.max(1, Math.min(32, 8000 / Math.max(s.naturalW, s.naturalH, 1))) : 8;
   }
 
-  function getImageCoords(e){
-    const rect = canvasStage.getBoundingClientRect();
-    let x = (e.clientX - rect.left) / zoom;
-    let y = (e.clientY - rect.top) / zoom;
+  function imgCoords(e) {
+    const s = sheet(), z = zoom();
+    const r = canvasStage.getBoundingClientRect();
     return {
-      x: clamp(x, 0, naturalW),
-      y: clamp(y, 0, naturalH)
+      x: clamp((e.clientX - r.left) / z, 0, s ? s.naturalW : 0),
+      y: clamp((e.clientY - r.top)  / z, 0, s ? s.naturalH : 0)
     };
   }
 
-  function snapToGrid(sel){
+  function snapToGrid(sel) {
     const cw = parseInt(cellWInput.value) || 1;
     const ch = parseInt(cellHInput.value) || 1;
-    if (!snapGridChk.checked || cw < 1 || ch < 1) return sel;
-    let x1 = Math.round(sel.x / cw) * cw;
-    let y1 = Math.round(sel.y / ch) * ch;
+    if (!snapGridChk.checked) return sel;
+    let x1 = Math.round(sel.x / cw) * cw, y1 = Math.round(sel.y / ch) * ch;
     let x2 = Math.round((sel.x + sel.w) / cw) * cw;
     let y2 = Math.round((sel.y + sel.h) / ch) * ch;
     if (x2 <= x1) x2 = x1 + cw;
@@ -540,548 +617,695 @@ button, input{font-family:inherit;}
     return {x:x1, y:y1, w:x2-x1, h:y2-y1};
   }
 
-  function clampSelection(sel){
-    let x = clamp(Math.round(sel.x), 0, naturalW);
-    let y = clamp(Math.round(sel.y), 0, naturalH);
-    let w = clamp(Math.round(sel.w), 1, naturalW - x);
-    let h = clamp(Math.round(sel.h), 1, naturalH - y);
-    return {x, y, w, h};
+  function clampSel(sel) {
+    const s = sheet();
+    if (!s) return sel;
+    const x = clamp(Math.round(sel.x), 0, s.naturalW);
+    const y = clamp(Math.round(sel.y), 0, s.naturalH);
+    return {x, y, w: clamp(Math.round(sel.w), 1, s.naturalW - x), h: clamp(Math.round(sel.h), 1, s.naturalH - y)};
   }
 
-  function escapeHTML(str){
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+  function esc(str) {
+    const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
   }
 
-  // ---------- Image loading ----------
-  function loadImageFile(file){
-    if (!file || !file.type || !file.type.startsWith('image/')) return;
+  // ══════════════════════════════════════════════════
+  // Sheet management
+  // ══════════════════════════════════════════════════
+  function makeSheet(name, image) {
+    const oc = document.createElement('canvas');
+    oc.width  = image.naturalWidth  || image.width;
+    oc.height = image.naturalHeight || image.height;
+    const octx = oc.getContext('2d');
+    octx.drawImage(image, 0, 0);
+    return {id: ++uidSeq, name, offCanvas: oc, offCtx: octx,
+            naturalW: oc.width, naturalH: oc.height, zoom: 1, slices: []};
+  }
+
+  function activateSheet(idx) {
+    if (idx < 0 || idx >= sheets.length) return;
+    if (pasteState) exitPaste(false);
+    activeIdx    = idx;
+    hasSelection = false;
+    selection    = {x:0,y:0,w:0,h:0};
+    const s      = sheet();
+    emptyState.style.display = 'none';
+    canvasStage.style.display = 'block';
+    zoomControls.style.display = 'flex';
+    exportBtn.disabled = false;
+    [inputX, inputY, inputW, inputH].forEach(el => el.disabled = false);
+    fitZoom(s);
+    render();
+    renderTabs();
+    renderSlices();
+    updateSelUI();
+    updateStatus();
+    renderPreviews();
+  }
+
+  function removeSheet(idx) {
+    sheets.splice(idx, 1);
+    if (sheets.length === 0) {
+      activeIdx = -1;
+      emptyState.style.display = '';
+      canvasStage.style.display = 'none';
+      zoomControls.style.display = 'none';
+      sheetsBar.style.display = 'none';
+      exportBtn.disabled = true;
+      hasSelection = false;
+      selection = {x:0,y:0,w:0,h:0};
+      if (pasteState) exitPaste(false);
+      statusLeft.textContent  = 'Add a sprite sheet to get started';
+      statusRight.textContent = '';
+      updateSelUI();
+      renderTabs();
+      renderSlices();
+      renderPreviews();
+      return;
+    }
+    activateSheet(Math.min(idx, sheets.length - 1));
+  }
+
+  function renderTabs() {
+    sheetsTabs.innerHTML = '';
+    if (!sheets.length) { sheetsBar.style.display = 'none'; return; }
+    sheetsBar.style.display = 'flex';
+    sheets.forEach((s, i) => {
+      const tab = document.createElement('div');
+      tab.className = 'sheet-tab' + (i === activeIdx ? ' active' : '');
+      tab.innerHTML = `
+        <span class="sheet-tab-name" title="${esc(s.name)}">${esc(s.name)}</span>
+        <span class="sheet-tab-close" data-ci="${i}" title="Close">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </span>`;
+      tab.addEventListener('click', e => {
+        const ci = e.target.closest('[data-ci]');
+        if (ci) { removeSheet(parseInt(ci.dataset.ci)); }
+        else     { activateSheet(i); }
+      });
+      sheetsTabs.appendChild(tab);
+    });
+  }
+
+  // ══════════════════════════════════════════════════
+  // Image loading
+  // ══════════════════════════════════════════════════
+  function loadFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const image = new Image();
-      image.onload = () => {
-        img = image;
-        naturalW = image.naturalWidth;
-        naturalH = image.naturalHeight;
-        currentFileName = file.name || 'sprite-sheet.png';
-        fileMeta.textContent = `${currentFileName} · ${naturalW} × ${naturalH}px`;
-        uploadLabel.textContent = '';
-        uploadLabel.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg> Replace image`;
-
-        emptyState.style.display = 'none';
-        canvasStage.style.display = 'block';
-        zoomControls.style.display = 'flex';
-
-        hasSelection = false;
-        selection = {x:0, y:0, w:0, h:0};
-
-        [inputX, inputY, inputW, inputH].forEach(el => el.disabled = false);
-
-        zoomFit();
-        render();
-        updateSelectionUI();
-        updateStatus();
-        renderPreviews();
-      };
-      image.onerror = () => {
-        statusLeft.textContent = 'Could not load that file as an image.';
-      };
-      image.src = e.target.result;
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload  = () => { sheets.push(makeSheet(file.name || 'sheet.png', img)); activateSheet(sheets.length - 1); renderTabs(); };
+      img.onerror = () => { statusLeft.textContent = `Could not load: ${file.name}`; };
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  // ---------- Rendering ----------
-  function render(){
-    canvas.width = Math.max(1, Math.round(naturalW * zoom));
-    canvas.height = Math.max(1, Math.round(naturalH * zoom));
-    canvasStage.style.width = canvas.width + 'px';
-    canvasStage.style.height = canvas.height + 'px';
-    ctx.imageSmoothingEnabled = false;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    updateGridOverlay();
-    updateSelectionUI();
+  // ══════════════════════════════════════════════════
+  // Rendering
+  // ══════════════════════════════════════════════════
+  function render() {
+    const s = sheet(); if (!s) return;
+    const z = s.zoom;
+    mainCanvas.width  = Math.max(1, Math.round(s.naturalW * z));
+    mainCanvas.height = Math.max(1, Math.round(s.naturalH * z));
+    canvasStage.style.width  = mainCanvas.width  + 'px';
+    canvasStage.style.height = mainCanvas.height + 'px';
+    mainCtx.imageSmoothingEnabled = false;
+    mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    mainCtx.drawImage(s.offCanvas, 0, 0, mainCanvas.width, mainCanvas.height);
+    syncPasteOverlay();
+    updateGrid();
+    updateSelUI();
     updateZoomLabel();
     updateStatus();
   }
 
-  function updateGridOverlay(){
-    if (!showGridChk.checked || !img){
-      gridOverlay.style.display = 'none';
-      return;
-    }
-    const cw = (parseInt(cellWInput.value) || 1) * zoom;
-    const ch = (parseInt(cellHInput.value) || 1) * zoom;
-    gridOverlay.style.display = 'block';
-    gridOverlay.style.width = canvas.width + 'px';
-    gridOverlay.style.height = canvas.height + 'px';
-    gridOverlay.style.backgroundSize = `${cw}px 100%, 100% ${ch}px`;
+  function updateGrid() {
+    const s = sheet();
+    if (!showGridChk.checked || !s) { gridOverlay.style.display = 'none'; return; }
+    const cw = (parseInt(cellWInput.value) || 1) * s.zoom;
+    const ch = (parseInt(cellHInput.value) || 1) * s.zoom;
+    gridOverlay.style.cssText += `;display:block;width:${mainCanvas.width}px;height:${mainCanvas.height}px;background-size:${cw}px 100%,100% ${ch}px`;
   }
 
-  function updateSelectionUI(){
+  function updateSelUI() {
     const valid = hasSelection && selection.w >= 1 && selection.h >= 1;
-    if (!valid){
-      selectionEl.style.display = 'none';
-    } else {
-      selectionEl.style.display = 'block';
-      selectionEl.style.left   = (selection.x * zoom) + 'px';
-      selectionEl.style.top    = (selection.y * zoom) + 'px';
-      selectionEl.style.width  = (selection.w * zoom) + 'px';
-      selectionEl.style.height = (selection.h * zoom) + 'px';
+    if (!valid) { selectionEl.style.display = 'none'; }
+    else {
+      const z = zoom();
+      selectionEl.style.cssText += `;display:block;left:${selection.x*z}px;top:${selection.y*z}px;width:${selection.w*z}px;height:${selection.h*z}px`;
       selTag.textContent = `${selection.w} × ${selection.h}`;
     }
-    copyCurrentBtn.disabled = !valid;
-    downloadCurrentBtn.disabled = !valid;
-    addSliceBtn.disabled = !valid;
+    const hasSheet = !!sheet();
+    copyCurrentBtn.disabled = downloadBtn.disabled = !valid;
+    addSliceBtn.disabled    = !valid;
+    copyPixelsBtn.disabled  = !valid;
+    cutPixelsBtn.disabled   = !valid;
     setInputs();
   }
 
-  function setInputs(){
-    const map = {inputX:['x',inputX], inputY:['y',inputY], inputW:['w',inputW], inputH:['h',inputH]};
-    Object.values(map).forEach(([key, el]) => {
-      if (document.activeElement !== el){
-        el.value = hasSelection ? selection[key] : '';
-      }
+  function setInputs() {
+    [[inputX,'x'],[inputY,'y'],[inputW,'w'],[inputH,'h']].forEach(([el,k]) => {
+      if (document.activeElement !== el) el.value = hasSelection ? selection[k] : '';
     });
   }
 
-  function updateZoomLabel(){
-    zoomLabel.textContent = Math.round(zoom * 100) + '%';
-  }
+  function updateZoomLabel() { zoomLabel.textContent = Math.round(zoom() * 100) + '%'; }
 
-  function updateStatus(){
-    if (!img){
-      statusLeft.textContent = 'Upload a sprite sheet to get started';
-      statusRight.textContent = '';
-      return;
-    }
-    if (hasSelection && selection.w >= 1 && selection.h >= 1){
-      statusLeft.textContent = `Selection — x ${selection.x}, y ${selection.y}, w ${selection.w}, h ${selection.h}`;
+  function updateStatus() {
+    const s = sheet();
+    if (!s) { statusLeft.textContent = 'Add a sprite sheet to get started'; statusRight.textContent = ''; return; }
+    if (pasteState) {
+      statusLeft.textContent = `Paste mode — position: ${pasteState.x}, ${pasteState.y}  ·  ${pasteState.w}×${pasteState.h}px`;
+    } else if (hasSelection && selection.w >= 1) {
+      statusLeft.textContent = `Selection — x:${selection.x} y:${selection.y} w:${selection.w} h:${selection.h}`;
     } else {
       statusLeft.textContent = 'Drag on the image to select a sprite';
     }
-    statusRight.textContent = `${naturalW} × ${naturalH}px · ${Math.round(zoom*100)}% zoom · arrows to nudge`;
+    statusRight.textContent = `${s.naturalW}×${s.naturalH}px · ${Math.round(s.zoom*100)}%`;
   }
 
-  // ---------- Zoom ----------
-  function setZoomCentered(newZoom, clientX, clientY){
-    newZoom = clamp(newZoom, 0.05, getMaxZoom());
-    if (newZoom === zoom) return;
-    const rect = canvasArea.getBoundingClientRect();
-    const cx = clientX !== undefined ? clientX : rect.left + rect.width/2;
-    const cy = clientY !== undefined ? clientY : rect.top + rect.height/2;
-    const offsetX = cx - rect.left + canvasArea.scrollLeft;
-    const offsetY = cy - rect.top + canvasArea.scrollTop;
-    const ratio = newZoom / zoom;
-    zoom = newZoom;
+  // ══════════════════════════════════════════════════
+  // Zoom
+  // ══════════════════════════════════════════════════
+  function setZoom(newZ, clientX, clientY) {
+    const s = sheet(); if (!s) return;
+    newZ = clamp(newZ, 0.05, maxZoom(s));
+    if (newZ === s.zoom) return;
+    const r   = canvasArea.getBoundingClientRect();
+    const cx  = clientX !== undefined ? clientX : r.left + r.width/2;
+    const cy  = clientY !== undefined ? clientY : r.top  + r.height/2;
+    const ox  = cx - r.left + canvasArea.scrollLeft;
+    const oy  = cy - r.top  + canvasArea.scrollTop;
+    const rat = newZ / s.zoom;
+    s.zoom = newZ;
     render();
-    canvasArea.scrollLeft = offsetX * ratio - (cx - rect.left);
-    canvasArea.scrollTop  = offsetY * ratio - (cy - rect.top);
+    canvasArea.scrollLeft = ox * rat - (cx - r.left);
+    canvasArea.scrollTop  = oy * rat - (cy - r.top);
   }
 
-  function zoomFit(){
-    const availW = Math.max(50, canvasArea.clientWidth - 96);
-    const availH = Math.max(50, canvasArea.clientHeight - 96);
-    const scale = Math.min(availW / naturalW, availH / naturalH);
-    zoom = clamp(scale, 0.05, getMaxZoom());
+  function fitZoom(s) {
+    s = s || sheet(); if (!s) return;
+    const aw = Math.max(50, canvasArea.clientWidth  - 96);
+    const ah = Math.max(50, canvasArea.clientHeight - 96);
+    s.zoom = clamp(Math.min(aw / s.naturalW, ah / s.naturalH), 0.05, maxZoom(s));
   }
 
-  // ---------- Selection drag interactions ----------
-  function applyResize(handle, dx, dy){
-    let x = selStart.x, y = selStart.y;
-    let x2 = selStart.x + selStart.w;
-    let y2 = selStart.y + selStart.h;
+  // ══════════════════════════════════════════════════
+  // Clipboard / Paste
+  // ══════════════════════════════════════════════════
+  function copySprite() {
+    const s = sheet();
+    if (!s || !hasSelection || selection.w < 1 || selection.h < 1) return;
+    const sel = clampSel(selection);
+    const imageData = s.offCtx.getImageData(sel.x, sel.y, sel.w, sel.h);
+    // build a tiny preview canvas for the indicator
+    const tc = document.createElement('canvas');
+    tc.width = sel.w; tc.height = sel.h;
+    tc.getContext('2d').putImageData(imageData, 0, 0);
+    clipboard = {imageData, w: sel.w, h: sel.h, thumbCanvas: tc};
+    updateClipIndicator();
+    pastePixelsBtn.disabled = false;
+    pulse(copyPixelsBtn, 'Copy');
+  }
 
+  function cutSprite() {
+    const s = sheet();
+    if (!s || !hasSelection || selection.w < 1 || selection.h < 1) return;
+    copySprite();
+    const sel = clampSel(selection);
+    s.offCtx.clearRect(sel.x, sel.y, sel.w, sel.h);
+    hasSelection = false;
+    render();
+    renderPreviews();
+  }
+
+  function updateClipIndicator() {
+    if (!clipboard) { clipIndicator.style.display = 'none'; return; }
+    clipIndicator.style.display = 'flex';
+    clipDims.textContent = `${clipboard.w} × ${clipboard.h} px`;
+    // draw thumb preview
+    const tc  = clipboard.thumbCanvas;
+    const tctx = clipThumb.getContext('2d');
+    tctx.imageSmoothingEnabled = false;
+    tctx.clearRect(0, 0, 28, 28);
+    const scale = Math.min(28 / tc.width, 28 / tc.height);
+    const dw = Math.round(tc.width * scale), dh = Math.round(tc.height * scale);
+    tctx.drawImage(tc, Math.round((28-dw)/2), Math.round((28-dh)/2), dw, dh);
+  }
+
+  function enterPaste() {
+    const s = sheet();
+    if (!clipboard || !s) return;
+    exitPaste(false); // cancel any existing paste
+    const tc = document.createElement('canvas');
+    tc.width = clipboard.w; tc.height = clipboard.h;
+    tc.getContext('2d').putImageData(clipboard.imageData, 0, 0);
+    // center in visible viewport
+    const z   = s.zoom;
+    const visX = canvasArea.scrollLeft / z, visY = canvasArea.scrollTop / z;
+    const visW = canvasArea.clientWidth  / z, visH = canvasArea.clientHeight / z;
+    const x = clamp(Math.round(visX + (visW - clipboard.w) / 2), 0, Math.max(0, s.naturalW - clipboard.w));
+    const y = clamp(Math.round(visY + (visH - clipboard.h) / 2), 0, Math.max(0, s.naturalH - clipboard.h));
+    pasteState = {tmpCanvas: tc, w: clipboard.w, h: clipboard.h, x, y};
+    pasteBanner.style.display = 'flex';
+    syncPasteOverlay();
+    updateStatus();
+  }
+
+  function exitPaste(commit) {
+    const s = sheet();
+    if (!pasteState) return;
+    if (commit && s) {
+      s.offCtx.imageSmoothingEnabled = false;
+      s.offCtx.drawImage(pasteState.tmpCanvas, pasteState.x, pasteState.y);
+      render();
+      renderPreviews();
+    }
+    pasteState = null;
+    pasteOverlay.style.display = 'none';
+    pasteBanner.style.display  = 'none';
+    updateStatus();
+  }
+
+  function syncPasteOverlay() {
+    if (!pasteState) return;
+    const z  = zoom();
+    const pw = Math.max(1, Math.round(pasteState.w * z));
+    const ph = Math.max(1, Math.round(pasteState.h * z));
+    // render paste canvas at display size for crisp output
+    pasteCanvas.width  = pw;
+    pasteCanvas.height = ph;
+    const pctx = pasteCanvas.getContext('2d');
+    pctx.imageSmoothingEnabled = false;
+    pctx.drawImage(pasteState.tmpCanvas, 0, 0, pw, ph);
+    pasteOverlay.style.left   = (pasteState.x * z) + 'px';
+    pasteOverlay.style.top    = (pasteState.y * z) + 'px';
+    pasteOverlay.style.width  = pw + 'px';
+    pasteOverlay.style.height = ph + 'px';
+    pasteOverlay.style.display = 'block';
+    pasteTag.textContent = `${pasteState.x}, ${pasteState.y}`;
+  }
+
+  // Paste overlay drag
+  pasteOverlay.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    if (!pasteState) return;
+    pasteDrag = {clientX: e.clientX, clientY: e.clientY, startX: pasteState.x, startY: pasteState.y};
+  });
+
+  commitBtn.addEventListener('click',      () => exitPaste(true));
+  cancelPasteBtn.addEventListener('click', () => exitPaste(false));
+  pastePixelsBtn.addEventListener('click', () => enterPaste());
+  copyPixelsBtn.addEventListener('click',  () => copySprite());
+  cutPixelsBtn.addEventListener('click',   () => cutSprite());
+
+  function pulse(btn, label) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = checkIcon + ' ' + label;
+    btn.classList.add('btn-success');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('btn-success'); }, 900);
+  }
+
+  // ══════════════════════════════════════════════════
+  // Export sheet
+  // ══════════════════════════════════════════════════
+  exportBtn.addEventListener('click', () => {
+    const s = sheet(); if (!s) return;
+    s.offCanvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a   = Object.assign(document.createElement('a'), {href:url, download: s.name.replace(/\.[^.]+$/, '') + '_export.png'});
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+    }, 'image/png');
+  });
+
+  // ══════════════════════════════════════════════════
+  // Selection drag interactions
+  // ══════════════════════════════════════════════════
+  function applyResize(handle, dx, dy) {
+    const s = sheet(); if (!s) return;
+    let x = selStart.x, y = selStart.y, x2 = selStart.x + selStart.w, y2 = selStart.y + selStart.h;
     if (handle.includes('e')) x2 = selStart.x + selStart.w + dx;
     if (handle.includes('s')) y2 = selStart.y + selStart.h + dy;
     if (handle.includes('w')) x  = selStart.x + dx;
     if (handle.includes('n')) y  = selStart.y + dy;
-
-    let nx  = Math.min(x, x2), nx2 = Math.max(x, x2);
-    let ny  = Math.min(y, y2), ny2 = Math.max(y, y2);
-
-    nx  = clamp(nx, 0, naturalW);
-    nx2 = clamp(nx2, 0, naturalW);
-    ny  = clamp(ny, 0, naturalH);
-    ny2 = clamp(ny2, 0, naturalH);
-
-    selection = {
-      x: Math.round(nx),
-      y: Math.round(ny),
-      w: Math.max(1, Math.round(nx2 - nx)),
-      h: Math.max(1, Math.round(ny2 - ny))
-    };
+    let nx = clamp(Math.min(x,x2), 0, s.naturalW), nx2 = clamp(Math.max(x,x2), 0, s.naturalW);
+    let ny = clamp(Math.min(y,y2), 0, s.naturalH), ny2 = clamp(Math.max(y,y2), 0, s.naturalH);
+    selection = {x: Math.round(nx), y: Math.round(ny), w: Math.max(1, Math.round(nx2-nx)), h: Math.max(1, Math.round(ny2-ny))};
   }
 
-  canvasStage.addEventListener('mousedown', (e) => {
-    if (!img) return;
+  canvasStage.addEventListener('mousedown', e => {
+    if (!sheet() || pasteState) return;
+    // Always blur any focused input when the user clicks the canvas
+    if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
     e.preventDefault();
-    const target = e.target;
     dragMoved = false;
-    dragStartImg = getImageCoords(e);
-
-    if (target.classList.contains('handle')){
-      dragMode = 'resize-' + target.dataset.handle;
-      selStart = {...selection};
-    } else if (target.closest('.selection') && hasSelection){
-      dragMode = 'move';
-      selStart = {...selection};
+    dragStartImg = imgCoords(e);
+    const t = e.target;
+    if (t.classList.contains('handle')) {
+      dragMode = 'resize-' + t.dataset.handle; selStart = {...selection};
+    } else if (t.closest('.selection') && hasSelection) {
+      dragMode = 'move'; selStart = {...selection};
     } else {
       dragMode = 'new';
-      selStart = {x: Math.round(dragStartImg.x), y: Math.round(dragStartImg.y), w: 0, h: 0};
-      selection = {...selStart};
-      hasSelection = true;
-      updateSelectionUI();
+      selStart = {x: Math.round(dragStartImg.x), y: Math.round(dragStartImg.y), w:0, h:0};
+      selection = {...selStart}; hasSelection = true; updateSelUI();
     }
   });
 
-  document.addEventListener('mousemove', (e) => {
-    if (!dragMode || !img) return;
-    const cur = getImageCoords(e);
-    const dx = cur.x - dragStartImg.x;
-    const dy = cur.y - dragStartImg.y;
+  document.addEventListener('mousemove', e => {
+    // Paste drag takes priority
+    if (pasteDrag) {
+      const s = sheet(); if (!s || !pasteState) { pasteDrag = null; return; }
+      const z  = s.zoom;
+      const dx = Math.round((e.clientX - pasteDrag.clientX) / z);
+      const dy = Math.round((e.clientY - pasteDrag.clientY) / z);
+      pasteState.x = clamp(pasteDrag.startX + dx, 0, Math.max(0, s.naturalW - pasteState.w));
+      pasteState.y = clamp(pasteDrag.startY + dy, 0, Math.max(0, s.naturalH - pasteState.h));
+      pasteOverlay.style.left = (pasteState.x * z) + 'px';
+      pasteOverlay.style.top  = (pasteState.y * z) + 'px';
+      pasteTag.textContent    = `${pasteState.x}, ${pasteState.y}`;
+      updateStatus();
+      return;
+    }
+
+    if (!dragMode || !sheet()) return;
+    const s   = sheet(), cur = imgCoords(e);
+    const dx  = cur.x - dragStartImg.x, dy = cur.y - dragStartImg.y;
     if (Math.abs(dx) > 0.6 || Math.abs(dy) > 0.6) dragMoved = true;
 
-    let result;
-    if (dragMode === 'new'){
-      let x = selStart.x, y = selStart.y;
-      let w = cur.x - selStart.x, h = cur.y - selStart.y;
-      if (w < 0){ x = cur.x; w = -w; }
-      if (h < 0){ y = cur.y; h = -h; }
-      result = {x, y, w, h};
-    } else if (dragMode === 'move'){
-      let nx = clamp(selStart.x + dx, 0, naturalW - selStart.w);
-      let ny = clamp(selStart.y + dy, 0, naturalH - selStart.h);
-      result = {x: nx, y: ny, w: selStart.w, h: selStart.h};
-    } else if (dragMode.startsWith('resize-')){
-      applyResize(dragMode.slice(7), dx, dy);
-      result = selection;
+    let res;
+    if (dragMode === 'new') {
+      let x = selStart.x, y = selStart.y, w = cur.x - selStart.x, h = cur.y - selStart.y;
+      if (w < 0) { x = cur.x; w = -w; } if (h < 0) { y = cur.y; h = -h; }
+      res = {x, y, w, h};
+    } else if (dragMode === 'move') {
+      res = {x: clamp(selStart.x+dx, 0, s.naturalW-selStart.w), y: clamp(selStart.y+dy, 0, s.naturalH-selStart.h), w:selStart.w, h:selStart.h};
+    } else if (dragMode.startsWith('resize-')) {
+      applyResize(dragMode.slice(7), dx, dy); res = selection;
     }
-
-    if (result){
-      result.x = Math.round(result.x);
-      result.y = Math.round(result.y);
-      result.w = Math.max(0, Math.round(result.w));
-      result.h = Math.max(0, Math.round(result.h));
-      selection = snapGridChk.checked && (result.w > 0 && result.h > 0) ? snapToGrid(result) : result;
+    if (res) {
+      res.x = Math.round(res.x); res.y = Math.round(res.y);
+      res.w = Math.max(0, Math.round(res.w)); res.h = Math.max(0, Math.round(res.h));
+      selection = (snapGridChk.checked && res.w > 0 && res.h > 0) ? snapToGrid(res) : res;
     }
-
-    updateSelectionUI();
-    updateStatus();
+    updateSelUI(); updateStatus();
   });
 
-  document.addEventListener('mouseup', (e) => {
-    if (!dragMode || !img){ dragMode = null; return; }
-
-    if (dragMode === 'new' && !dragMoved){
-      if (snapGridChk.checked){
-        const cw = parseInt(cellWInput.value) || 1;
-        const ch = parseInt(cellHInput.value) || 1;
-        const coords = getImageCoords(e);
-        let cx = Math.floor(coords.x / cw) * cw;
-        let cy = Math.floor(coords.y / ch) * ch;
-        cx = clamp(cx, 0, Math.max(0, naturalW - cw));
-        cy = clamp(cy, 0, Math.max(0, naturalH - ch));
-        selection = {x: cx, y: cy, w: Math.min(cw, naturalW), h: Math.min(ch, naturalH)};
+  document.addEventListener('mouseup', e => {
+    if (pasteDrag) { pasteDrag = null; return; }
+    if (!dragMode || !sheet()) { dragMode = null; return; }
+    if (dragMode === 'new' && !dragMoved) {
+      if (snapGridChk.checked) {
+        const cw = parseInt(cellWInput.value)||1, ch = parseInt(cellHInput.value)||1;
+        const s = sheet(), c = imgCoords(e);
+        const cx = clamp(Math.floor(c.x/cw)*cw, 0, Math.max(0, s.naturalW-cw));
+        const cy = clamp(Math.floor(c.y/ch)*ch, 0, Math.max(0, s.naturalH-ch));
+        selection = {x:cx, y:cy, w:Math.min(cw,s.naturalW), h:Math.min(ch,s.naturalH)};
         hasSelection = true;
-      } else {
-        hasSelection = false;
-      }
+      } else { hasSelection = false; }
     }
-
-    if (hasSelection && selection.w >= 1 && selection.h >= 1){
-      selection = clampSelection(selection);
-    }
-
-    dragMode = null;
-    updateSelectionUI();
-    updateStatus();
+    if (hasSelection && selection.w >= 1 && selection.h >= 1) selection = clampSel(selection);
+    dragMode = null; updateSelUI(); updateStatus();
   });
 
-  // ---------- Sidebar field edits ----------
-  function onFieldChange(){
-    if (!img) return;
-    let x = parseInt(inputX.value); if (isNaN(x)) x = 0;
-    let y = parseInt(inputY.value); if (isNaN(y)) y = 0;
-    let w = parseInt(inputW.value); if (isNaN(w)) w = 1;
-    let h = parseInt(inputH.value); if (isNaN(h)) h = 1;
-
-    x = clamp(x, 0, Math.max(0, naturalW - 1));
-    y = clamp(y, 0, Math.max(0, naturalH - 1));
-    w = clamp(w, 1, naturalW - x);
-    h = clamp(h, 1, naturalH - y);
-
-    selection = {x, y, w, h};
-    hasSelection = true;
-    updateSelectionUI();
-    updateStatus();
+  // ══════════════════════════════════════════════════
+  // Sidebar field edits
+  // ══════════════════════════════════════════════════
+  function onFieldChange() {
+    const s = sheet(); if (!s) return;
+    let x = parseInt(inputX.value)||0, y = parseInt(inputY.value)||0;
+    let w = parseInt(inputW.value)||1, h = parseInt(inputH.value)||1;
+    x = clamp(x, 0, Math.max(0, s.naturalW-1)); y = clamp(y, 0, Math.max(0, s.naturalH-1));
+    w = clamp(w, 1, s.naturalW-x);              h = clamp(h, 1, s.naturalH-y);
+    selection = {x,y,w,h}; hasSelection = true; updateSelUI(); updateStatus();
   }
   [inputX, inputY, inputW, inputH].forEach(el => el.addEventListener('input', onFieldChange));
 
-  // ---------- Keyboard nudge ----------
-  document.addEventListener('keydown', (e) => {
-    const tag = document.activeElement.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA') {
-      if (e.key === 'Escape') document.activeElement.blur();
-      return;
-    }
-    if (!img) return;
+  // ══════════════════════════════════════════════════
+  // Keyboard
+  // ══════════════════════════════════════════════════
+  document.addEventListener('keydown', e => {
+    const tag     = document.activeElement.tagName;
+    const inInput = tag === 'INPUT' || tag === 'TEXTAREA';
 
-    if (e.key === 'Escape'){
-      hasSelection = false;
-      updateSelectionUI();
-      updateStatus();
+    // ── Ctrl/Cmd shortcuts: checked FIRST so they always fire ──────────────
+    if (e.ctrlKey || e.metaKey) {
+      // Ctrl+V: paste sprite when we have clipboard data; works even while an input is focused
+      if (e.key === 'v' && clipboard) {
+        e.preventDefault();
+        if (inInput) document.activeElement.blur(); // drop input focus before entering paste
+        enterPaste();
+        return;
+      }
+      // Ctrl+C / Ctrl+X: only when NOT typing inside an input
+      if (!inInput) {
+        if (e.key === 'c') { e.preventDefault(); copySprite(); return; }
+        if (e.key === 'x') { e.preventDefault(); cutSprite();  return; }
+      }
+    }
+
+    // Input fields capture all other keys; Escape drops focus
+    if (inInput) { if (e.key === 'Escape') document.activeElement.blur(); return; }
+
+    // Paste mode keyboard
+    if (pasteState) {
+      if (e.key === 'Enter')  { e.preventDefault(); exitPaste(true);  return; }
+      if (e.key === 'Escape') { e.preventDefault(); exitPaste(false); return; }
+      if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
+        e.preventDefault();
+        const s = sheet(); if (!s) return;
+        const step = e.shiftKey ? 10 : 1;
+        if (e.key === 'ArrowLeft')  pasteState.x = clamp(pasteState.x - step, 0, s.naturalW - pasteState.w);
+        if (e.key === 'ArrowRight') pasteState.x = clamp(pasteState.x + step, 0, s.naturalW - pasteState.w);
+        if (e.key === 'ArrowUp')    pasteState.y = clamp(pasteState.y - step, 0, s.naturalH - pasteState.h);
+        if (e.key === 'ArrowDown')  pasteState.y = clamp(pasteState.y + step, 0, s.naturalH - pasteState.h);
+        const z = zoom();
+        pasteOverlay.style.left  = (pasteState.x * z) + 'px';
+        pasteOverlay.style.top   = (pasteState.y * z) + 'px';
+        pasteTag.textContent     = `${pasteState.x}, ${pasteState.y}`;
+        updateStatus(); return;
+      }
       return;
     }
+
+    const s = sheet(); if (!s) return;
+    if (e.key === 'Escape') { hasSelection = false; updateSelUI(); updateStatus(); return; }
     if (!hasSelection) return;
-
     const step = e.shiftKey ? 10 : 1;
     let used = true;
-    switch (e.key){
-      case 'ArrowLeft':  selection.x = clamp(selection.x - step, 0, naturalW - selection.w); break;
-      case 'ArrowRight': selection.x = clamp(selection.x + step, 0, naturalW - selection.w); break;
-      case 'ArrowUp':    selection.y = clamp(selection.y - step, 0, naturalH - selection.h); break;
-      case 'ArrowDown':  selection.y = clamp(selection.y + step, 0, naturalH - selection.h); break;
+    switch (e.key) {
+      case 'ArrowLeft':  selection.x = clamp(selection.x-step, 0, s.naturalW-selection.w); break;
+      case 'ArrowRight': selection.x = clamp(selection.x+step, 0, s.naturalW-selection.w); break;
+      case 'ArrowUp':    selection.y = clamp(selection.y-step, 0, s.naturalH-selection.h); break;
+      case 'ArrowDown':  selection.y = clamp(selection.y+step, 0, s.naturalH-selection.h); break;
       default: used = false;
     }
-    if (used){
-      e.preventDefault();
-      updateSelectionUI();
-      updateStatus();
-    }
+    if (used) { e.preventDefault(); updateSelUI(); updateStatus(); }
   });
 
-  // ---------- Cursor coordinate badge ----------
-  canvasStage.addEventListener('mousemove', (e) => {
-    if (!img) return;
-    const coords = getImageCoords(e);
-    const areaRect = canvasArea.getBoundingClientRect();
-    cursorBadge.textContent = `${Math.round(coords.x)}, ${Math.round(coords.y)}`;
-    cursorBadge.style.left = (e.clientX - areaRect.left + 14) + 'px';
-    cursorBadge.style.top  = (e.clientY - areaRect.top + 14) + 'px';
+  // ══════════════════════════════════════════════════
+  // Cursor badge
+  // ══════════════════════════════════════════════════
+  canvasStage.addEventListener('mousemove', e => {
+    if (!sheet()) return;
+    const c = imgCoords(e), r = canvasArea.getBoundingClientRect();
+    cursorBadge.textContent   = `${Math.round(c.x)}, ${Math.round(c.y)}`;
+    cursorBadge.style.left    = (e.clientX - r.left + 14) + 'px';
+    cursorBadge.style.top     = (e.clientY - r.top  + 14) + 'px';
     cursorBadge.style.display = 'block';
   });
   canvasStage.addEventListener('mouseleave', () => { cursorBadge.style.display = 'none'; });
 
-  // ---------- Zoom controls ----------
-  document.getElementById('zoomIn').addEventListener('click', () => setZoomCentered(zoom * 1.25));
-  document.getElementById('zoomOut').addEventListener('click', () => setZoomCentered(zoom / 1.25));
-  document.getElementById('zoom100').addEventListener('click', () => setZoomCentered(1));
-  document.getElementById('zoomFit').addEventListener('click', () => {
-    canvasArea.scrollTop = 0; canvasArea.scrollLeft = 0;
-    zoomFit(); render();
+  // ══════════════════════════════════════════════════
+  // Zoom controls
+  // ══════════════════════════════════════════════════
+  document.getElementById('zoomIn').addEventListener('click',  () => setZoom(zoom() * 1.25));
+  document.getElementById('zoomOut').addEventListener('click', () => setZoom(zoom() / 1.25));
+  document.getElementById('zoom100Btn').addEventListener('click', () => setZoom(1));
+  document.getElementById('zoomFitBtn').addEventListener('click', () => {
+    canvasArea.scrollTop = 0; canvasArea.scrollLeft = 0; fitZoom(); render();
   });
-  canvasArea.addEventListener('wheel', (e) => {
-    if (!img || !e.ctrlKey) return;
+  canvasArea.addEventListener('wheel', e => {
+    if (!sheet() || !e.ctrlKey) return;
     e.preventDefault();
-    const factor = e.deltaY < 0 ? 1.1 : 1/1.1;
-    setZoomCentered(zoom * factor, e.clientX, e.clientY);
+    setZoom(zoom() * (e.deltaY < 0 ? 1.1 : 1/1.1), e.clientX, e.clientY);
   }, {passive:false});
 
-  // ---------- Grid controls ----------
-  showGridChk.addEventListener('change', () => { if (img){ updateGridOverlay(); } });
-  [cellWInput, cellHInput].forEach(el => el.addEventListener('input', () => { if (img) updateGridOverlay(); }));
+  // ══════════════════════════════════════════════════
+  // Grid controls
+  // ══════════════════════════════════════════════════
+  showGridChk.addEventListener('change', () => { if (sheet()) updateGrid(); });
+  [cellWInput, cellHInput].forEach(el => el.addEventListener('input', () => { if (sheet()) updateGrid(); }));
 
-  // ---------- Copy / download (current selection) ----------
-  function buildSliceObject(){
+  // ══════════════════════════════════════════════════
+  // JSON copy/download
+  // ══════════════════════════════════════════════════
+  function buildSliceObj() {
     const name = sliceNameInput.value.trim();
-    return name
-      ? {name, x: selection.x, y: selection.y, w: selection.w, h: selection.h}
-      : {x: selection.x, y: selection.y, w: selection.w, h: selection.h};
+    return name ? {name, x:selection.x, y:selection.y, w:selection.w, h:selection.h}
+                : {x:selection.x, y:selection.y, w:selection.w, h:selection.h};
   }
 
-  function copyText(text, btn){
-    navigator.clipboard.writeText(text).then(() => flashButton(btn, true))
-      .catch(() => flashButton(btn, false));
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => flashBtn(btn, true)).catch(() => flashBtn(btn, false));
   }
 
-  function flashButton(btn, ok){
-    const original = btn.innerHTML;
-    btn.innerHTML = ok ? `${checkIcon} ${btn === copyCurrentBtn || btn === downloadCurrentBtn ? 'Copied!' : ''}` : 'Failed';
+  function flashBtn(btn, ok) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = ok ? `${checkIcon} Copied!` : 'Failed';
     btn.classList.toggle('btn-success', ok);
     btn.disabled = true;
-    setTimeout(() => {
-      btn.innerHTML = original;
-      btn.classList.remove('btn-success');
-      btn.disabled = false;
-    }, 1100);
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('btn-success'); btn.disabled = false; }, 1100);
   }
 
-  function downloadJSON(data, filename){
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  function downloadJSON(data, fname) {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+    const a   = Object.assign(document.createElement('a'), {href:url, download:fname});
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
   }
 
   copyCurrentBtn.addEventListener('click', () => {
     if (!hasSelection || selection.w < 1) return;
-    copyText(JSON.stringify(buildSliceObject(), null, 2), copyCurrentBtn);
+    copyText(JSON.stringify(buildSliceObj(), null, 2), copyCurrentBtn);
   });
-  downloadCurrentBtn.addEventListener('click', () => {
+  downloadBtn.addEventListener('click', () => {
     if (!hasSelection || selection.w < 1) return;
-    const name = sliceNameInput.value.trim() || 'sprite';
-    downloadJSON(buildSliceObject(), `${name}.json`);
+    downloadJSON(buildSliceObj(), `${sliceNameInput.value.trim() || 'sprite'}.json`);
   });
 
-  // ---------- Slices list ----------
-  function renderSlices(){
+  // ══════════════════════════════════════════════════
+  // Slices list (per-sheet)
+  // ══════════════════════════════════════════════════
+  function renderSlices() {
+    const s      = sheet();
+    const slices = s ? s.slices : [];
     slicesList.innerHTML = '';
     sliceCount.textContent = `(${slices.length})`;
     slicesEmpty.style.display = slices.length ? 'none' : 'block';
-    copyAllBtn.disabled = downloadAllBtn.disabled = slices.length === 0;
-
-    slices.forEach((s, idx) => {
+    copyAllBtn.disabled = downloadAllBtn.disabled = !slices.length;
+    slices.forEach((sl, idx) => {
       const li = document.createElement('li');
       li.className = 'slice-item';
       li.innerHTML = `
         <div class="slice-info">
-          <span class="slice-name">${escapeHTML(s.name)}</span>
-          <span class="slice-dims">x:${s.x} y:${s.y} w:${s.w} h:${s.h}</span>
+          <span class="slice-name">${esc(sl.name)}</span>
+          <span class="slice-dims">x:${sl.x} y:${sl.y} w:${sl.w} h:${sl.h}</span>
         </div>
         <div class="slice-actions">
-          <button class="btn-icon btn-icon-sm" data-action="load" data-idx="${idx}" title="Load into editor">${loadIcon}</button>
+          <button class="btn-icon btn-icon-sm" data-action="load"   data-idx="${idx}" title="Load">${loadIcon}</button>
           <button class="btn-icon btn-icon-sm btn-icon-danger" data-action="delete" data-idx="${idx}" title="Remove">${trashIcon}</button>
         </div>`;
       slicesList.appendChild(li);
     });
-
     renderPreviews();
   }
 
-  // ---------- Sprite previews ----------
-  function renderPreviews(){
-    const show = showPreviewChk.checked;
-    const hasSlices = slices.length > 0;
-
-    previewGrid.style.display = (show && hasSlices) ? 'grid' : 'none';
-    previewEmpty.style.display = (show && !hasSlices) ? 'block' : 'none';
-
-    if (!show) return;
-
-    previewGrid.innerHTML = '';
-    if (!img) return;
-
-    slices.forEach(s => {
-      const tile = document.createElement('div');
-      tile.className = 'preview-tile';
-
-      const thumb = document.createElement('div');
-      thumb.className = 'preview-thumb';
-
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, s.w);
-      canvas.height = Math.max(1, s.h);
-      const pctx = canvas.getContext('2d');
-      pctx.imageSmoothingEnabled = false;
-      pctx.drawImage(img, s.x, s.y, s.w, s.h, 0, 0, s.w, s.h);
-      thumb.appendChild(canvas);
-
-      const title = document.createElement('div');
-      title.className = 'preview-title';
-      title.textContent = s.name;
-      title.title = s.name;
-
-      const dims = document.createElement('div');
-      dims.className = 'preview-dims';
-      dims.textContent = `${s.w} × ${s.h}`;
-
-      tile.appendChild(thumb);
-      tile.appendChild(title);
-      tile.appendChild(dims);
-      previewGrid.appendChild(tile);
-    });
-  }
-
-  showPreviewChk.addEventListener('change', renderPreviews);
-
   addSliceBtn.addEventListener('click', () => {
-    if (!hasSelection || selection.w < 1 || selection.h < 1) return;
-    let base = sliceNameInput.value.trim() || `sprite_${slices.length + 1}`;
-    let name = base, i = 1;
-    while (slices.some(s => s.name === name)) name = `${base}_${i++}`;
-    slices.push({name, x: selection.x, y: selection.y, w: selection.w, h: selection.h});
+    const s = sheet();
+    if (!s || !hasSelection || selection.w < 1 || selection.h < 1) return;
+    let base = sliceNameInput.value.trim() || `sprite_${s.slices.length + 1}`, name = base, i = 1;
+    while (s.slices.some(sl => sl.name === name)) name = `${base}_${i++}`;
+    s.slices.push({name, x:selection.x, y:selection.y, w:selection.w, h:selection.h});
     renderSlices();
   });
 
-  slicesList.addEventListener('click', (e) => {
-    const btn = e.target.closest('button');
-    if (!btn) return;
+  slicesList.addEventListener('click', e => {
+    const s = sheet(); if (!s) return;
+    const btn = e.target.closest('button'); if (!btn) return;
     const idx = parseInt(btn.dataset.idx);
-    if (btn.dataset.action === 'load'){
-      const s = slices[idx];
-      selection = {x: s.x, y: s.y, w: s.w, h: s.h};
-      sliceNameInput.value = s.name;
-      hasSelection = true;
-      updateSelectionUI();
-      updateStatus();
-    } else if (btn.dataset.action === 'delete'){
-      slices.splice(idx, 1);
-      renderSlices();
+    if (btn.dataset.action === 'load') {
+      const sl = s.slices[idx];
+      selection = {x:sl.x, y:sl.y, w:sl.w, h:sl.h}; sliceNameInput.value = sl.name;
+      hasSelection = true; updateSelUI(); updateStatus();
+    } else if (btn.dataset.action === 'delete') {
+      s.slices.splice(idx, 1); renderSlices();
     }
   });
 
-  function buildAtlasObject(){
+  function buildAtlas() {
+    const s = sheet(); if (!s) return {};
     const sprites = {};
-    slices.forEach(s => { sprites[s.name] = {x: s.x, y: s.y, w: s.w, h: s.h}; });
-    return currentFileName
-      ? {image: currentFileName, imageWidth: naturalW, imageHeight: naturalH, sprites}
-      : {sprites};
+    s.slices.forEach(sl => { sprites[sl.name] = {x:sl.x, y:sl.y, w:sl.w, h:sl.h}; });
+    return {image: s.name, imageWidth: s.naturalW, imageHeight: s.naturalH, sprites};
   }
-  copyAllBtn.addEventListener('click', () => copyText(JSON.stringify(buildAtlasObject(), null, 2), copyAllBtn));
+
+  copyAllBtn.addEventListener('click', () => copyText(JSON.stringify(buildAtlas(), null, 2), copyAllBtn));
   downloadAllBtn.addEventListener('click', () => {
-    const base = currentFileName ? currentFileName.replace(/\.[^.]+$/, '') : 'sprites';
-    downloadJSON(buildAtlasObject(), `${base}.json`);
+    const s = sheet();
+    downloadJSON(buildAtlas(), `${(s ? s.name : 'sprites').replace(/\.[^.]+$/, '')}.json`);
   });
 
-  // ---------- File input / drag & drop / paste ----------
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) loadImageFile(file);
-    fileInput.value = '';
-  });
+  // ══════════════════════════════════════════════════
+  // Previews (per-sheet)
+  // ══════════════════════════════════════════════════
+  function renderPreviews() {
+    const s      = sheet();
+    const slices = s ? s.slices : [];
+    const show   = showPreviewChk.checked;
+    previewGrid.style.display  = (show && slices.length) ? 'grid' : 'none';
+    previewEmpty.style.display = (show && !slices.length) ? 'block' : 'none';
+    if (!show || !s) return;
+    previewGrid.innerHTML = '';
+    slices.forEach(sl => {
+      const tile = document.createElement('div'); tile.className = 'preview-tile';
+      const thm  = document.createElement('div'); thm.className  = 'preview-thumb';
+      const pc   = document.createElement('canvas');
+      pc.width   = Math.max(1, sl.w); pc.height = Math.max(1, sl.h);
+      const pctx = pc.getContext('2d'); pctx.imageSmoothingEnabled = false;
+      pctx.drawImage(s.offCanvas, sl.x, sl.y, sl.w, sl.h, 0, 0, sl.w, sl.h);
+      thm.appendChild(pc);
+      const ttl = Object.assign(document.createElement('div'), {className:'preview-title', textContent:sl.name, title:sl.name});
+      const dim = Object.assign(document.createElement('div'), {className:'preview-dims',  textContent:`${sl.w}×${sl.h}`});
+      tile.append(thm, ttl, dim);
+      previewGrid.appendChild(tile);
+    });
+  }
+  showPreviewChk.addEventListener('change', renderPreviews);
 
-  ['dragenter','dragover'].forEach(evt => canvasArea.addEventListener(evt, (e) => {
-    e.preventDefault();
-    canvasArea.classList.add('drag-over');
+  // ══════════════════════════════════════════════════
+  // File input / drag-drop / paste
+  // ══════════════════════════════════════════════════
+  fileInput.addEventListener('change', e => {
+    Array.from(e.target.files).forEach(loadFile); fileInput.value = '';
+  });
+  ['dragenter','dragover'].forEach(ev => canvasArea.addEventListener(ev, e => {
+    e.preventDefault(); canvasArea.classList.add('drag-over');
   }));
-  ['dragleave','drop'].forEach(evt => canvasArea.addEventListener(evt, (e) => {
-    e.preventDefault();
-    canvasArea.classList.remove('drag-over');
+  ['dragleave','drop'].forEach(ev => canvasArea.addEventListener(ev, e => {
+    e.preventDefault(); canvasArea.classList.remove('drag-over');
   }));
-  canvasArea.addEventListener('drop', (e) => {
-    const file = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (file) loadImageFile(file);
-  });
+  canvasArea.addEventListener('drop', e => { Array.from(e.dataTransfer.files||[]).forEach(loadFile); });
 
-  document.addEventListener('paste', (e) => {
-    const items = e.clipboardData && e.clipboardData.items;
-    if (!items) return;
-    for (const item of items){
-      if (item.type && item.type.startsWith('image/')){
-        const file = item.getAsFile();
-        if (file) loadImageFile(file);
-        e.preventDefault();
-        break;
+  document.addEventListener('paste', e => {
+    if (document.activeElement.tagName === 'INPUT') return;
+    // If we have sprite clipboard data, Ctrl+V is already handled by keydown → enterPaste().
+    // Don't also try to load a new sheet from the system clipboard.
+    if (clipboard) return;
+    const items = e.clipboardData && e.clipboardData.items; if (!items) return;
+    for (const item of items) {
+      if (item.type && item.type.startsWith('image/')) {
+        const f = item.getAsFile(); if (f) { loadFile(f); e.preventDefault(); break; }
       }
     }
   });
 
-  // ---------- Resize ----------
+  // ══════════════════════════════════════════════════
+  // Resize
+  // ══════════════════════════════════════════════════
   let resizeTimer = null;
   window.addEventListener('resize', () => {
-    if (!img) return;
+    if (!sheet()) return;
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => updateGridOverlay(), 100);
+    resizeTimer = setTimeout(() => updateGrid(), 100);
   });
 
-  // ---------- Init ----------
+  // ══════════════════════════════════════════════════
+  // Init
+  // ══════════════════════════════════════════════════
   updateStatus();
 })();
 </script>
